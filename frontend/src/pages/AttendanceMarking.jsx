@@ -4,6 +4,8 @@ import { Calendar, Check, X, Clock, Save, ChevronRight } from 'lucide-react';
 
 const AttendanceMarking = () => {
     const [students, setStudents] = useState([]);
+    const [classes, setClasses] = useState([]);
+    const [selectedClass, setSelectedClass] = useState('All Classes');
     const [attendance, setAttendance] = useState({}); // studentId: status
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [loading, setLoading] = useState(true);
@@ -11,16 +13,21 @@ const AttendanceMarking = () => {
     const [message, setMessage] = useState(null);
 
     useEffect(() => {
-        fetchStudents();
+        fetchStudentsAndClasses();
     }, []);
 
-    const fetchStudents = async () => {
+    const fetchStudentsAndClasses = async () => {
         try {
-            const { data } = await api.get('/students');
-            setStudents(data);
+            const [stRes, clRes] = await Promise.all([
+                api.get('/students'),
+                api.get('/classes')
+            ]);
+            setStudents(stRes.data);
+            setClasses(clRes.data);
+            
             // Initialize attendance: all null by default
             const initialAttendance = {};
-            data.forEach(s => initialAttendance[s._id] = null);
+            stRes.data.forEach(s => initialAttendance[s._id] = null);
             setAttendance(initialAttendance);
         } catch (err) {
             console.error(err);
@@ -29,9 +36,13 @@ const AttendanceMarking = () => {
         }
     };
 
+    const filteredStudents = selectedClass === 'All Classes' 
+        ? students 
+        : students.filter(s => s.class === selectedClass);
+
     const handleMarkAllPresent = () => {
-        const markedAll = {};
-        students.forEach(s => markedAll[s._id] = 'Present');
+        const markedAll = { ...attendance };
+        filteredStudents.forEach(s => markedAll[s._id] = 'Present');
         setAttendance(markedAll);
     };
 
@@ -40,24 +51,25 @@ const AttendanceMarking = () => {
     };
 
     const handleSubmit = async () => {
-        // Check if all students are marked
-        const unmarkedCount = students.filter(s => !attendance[s._id]).length;
+        // Check if all filtered students are marked
+        const unmarkedCount = filteredStudents.filter(s => !attendance[s._id]).length;
         if (unmarkedCount > 0) {
-            setMessage({ type: 'error', text: `Please mark attendance for all students (${unmarkedCount} remaining).` });
+            setMessage({ type: 'error', text: `Please mark attendance for all selected students (${unmarkedCount} remaining).` });
             return;
         }
 
         setSaving(true);
         try {
-            const attendanceRecords = Object.keys(attendance).map(id => ({
-                studentId: id,
-                status: attendance[id]
+            // Only submit attendance for the currently filtered students
+            const attendanceRecords = filteredStudents.map(s => ({
+                studentId: s._id,
+                status: attendance[s._id]
             }));
             await api.post('/attendance', { attendanceRecords, date });
             setMessage({ type: 'success', text: 'Attendance saved successfully!' });
             setTimeout(() => setMessage(null), 3000);
         } catch (err) {
-            setMessage({ type: 'error', text: 'Failed to save attendance.' });
+            setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to save attendance.' });
         } finally {
             setSaving(false);
         }
@@ -71,7 +83,17 @@ const AttendanceMarking = () => {
                     <p>Select students and mark their status for today.</p>
                 </div>
                 <div className="header-actions">
-                    <button className="mark-all-btn glass" onClick={handleMarkAllPresent} disabled={students.length === 0}>
+                    <select 
+                        className="class-selector glass"
+                        value={selectedClass}
+                        onChange={(e) => setSelectedClass(e.target.value)}
+                    >
+                        <option value="All Classes">All Classes</option>
+                        {classes.map(cls => (
+                            <option key={cls._id} value={cls.name}>{cls.name}</option>
+                        ))}
+                    </select>
+                    <button className="mark-all-btn glass" onClick={handleMarkAllPresent} disabled={filteredStudents.length === 0}>
                         <Check size={18} />
                         <span>Mark All Present</span>
                     </button>
@@ -101,10 +123,10 @@ const AttendanceMarking = () => {
                 <div className="student-list custom-scrollbar">
                     {loading ? (
                         <div className="loading">Loading students...</div>
-                    ) : students.length === 0 ? (
-                        <div className="empty">No students found. Add students first.</div>
+                    ) : filteredStudents.length === 0 ? (
+                        <div className="empty">No students found for this class.</div>
                     ) : (
-                        students.map(student => (
+                        filteredStudents.map(student => (
                             <div key={student._id} className="student-row">
                                 <div className="st-info">
                                     <div className="st-avatar">{student.name.charAt(0)}</div>
@@ -147,7 +169,7 @@ const AttendanceMarking = () => {
                 <button 
                     className="submit-btn" 
                     onClick={handleSubmit}
-                    disabled={saving || loading || students.length === 0}
+                    disabled={saving || loading || filteredStudents.length === 0}
                 >
                     {saving ? 'Saving...' : 'Submit Attendance'}
                     <Save size={20} />
@@ -169,6 +191,17 @@ const AttendanceMarking = () => {
                     display: flex;
                     align-items: center;
                     gap: 15px;
+                }
+                .class-selector {
+                    padding: 0.6rem 1rem;
+                    border-radius: 12px;
+                    border: 1.5px solid var(--border);
+                    background: white;
+                    color: var(--text-main);
+                    font-weight: 500;
+                    outline: none;
+                    cursor: pointer;
+                    min-width: 140px;
                 }
                 .mark-all-btn {
                     display: flex;
