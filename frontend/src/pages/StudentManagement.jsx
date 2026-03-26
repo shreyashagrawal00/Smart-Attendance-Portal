@@ -134,7 +134,7 @@ const StudentManagement = () => {
                 }
                 .class-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); }
                 .class-icon { 
-                    width: 60px; height: 60px; border-radius: 18px; background: #eef2ff; color: var(--primary);
+                    width: 60px; height: 60px; border-radius: 18px; background: rgba(109, 139, 116, 0.05); color: var(--primary);
                     display: flex; align-items: center; justify-content: center;
                 }
                 .class-info h3 { font-size: 1.25rem; margin-bottom: 4px; }
@@ -349,11 +349,10 @@ const StudentManagement = () => {
                     align-items: center;
                 }
                 .search-box {
-                    flex: 1;
                     display: flex;
                     align-items: center;
                     gap: 10px;
-                    background: #f1f5f9;
+                    background: rgba(109, 139, 116, 0.05);
                     padding: 0.6rem 1rem;
                     border-radius: 10px;
                 }
@@ -366,7 +365,7 @@ const StudentManagement = () => {
                 .filter-btn {
                     padding: 0.6rem 1rem;
                     border-radius: 10px;
-                    background: #f1f5f9;
+                    background: rgba(109, 139, 116, 0.05);
                     color: var(--secondary);
                     display: flex;
                     align-items: center;
@@ -384,7 +383,7 @@ const StudentManagement = () => {
                     text-align: left;
                 }
                 .student-table th {
-                    background: #f8fafc;
+                    background: rgba(109, 139, 116, 0.02);
                     padding: 1rem 1.5rem;
                     font-weight: 600;
                     color: var(--secondary);
@@ -407,7 +406,7 @@ const StudentManagement = () => {
                     align-items: center;
                     justify-content: center;
                     color: var(--danger);
-                    background: #fef2f2;
+                    background: rgba(239, 68, 68, 0.1);
                     opacity: 0;
                     transition: all 0.2s;
                 }
@@ -415,7 +414,7 @@ const StudentManagement = () => {
                 .delete-class-mini:hover { background: var(--danger); color: white; }
                 
                 .roll-badge {
-                    background: #eef2ff;
+                    background: rgba(109, 139, 116, 0.05);
                     color: var(--primary);
                     padding: 4px 10px;
                     border-radius: 6px;
@@ -442,10 +441,10 @@ const StudentManagement = () => {
                     justify-content: center;
                     transition: all 0.2s;
                 }
-                .edit-btn { background: #ecfdf5; color: var(--success); }
-                .edit-btn:hover { background: var(--success); color: white; }
-                .delete-btn { background: #fef2f2; color: var(--danger); }
-                .delete-btn:hover { background: var(--danger); color: white; }
+                .edit-btn { background: rgba(109, 139, 116, 0.1); color: var(--primary); }
+                .edit-btn:hover { background: var(--primary); color: var(--bg-main); }
+                .delete-btn { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+                .delete-btn:hover { background: #ef4444; color: white; }
                 
                 .modal-overlay {
                     position: fixed;
@@ -453,7 +452,7 @@ const StudentManagement = () => {
                     left: 0;
                     right: 0;
                     bottom: 0;
-                    background: rgba(0, 0, 0, 0.4);
+                    background: rgba(95, 113, 97, 0.4);
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -474,12 +473,15 @@ const StudentManagement = () => {
                     padding: 0.75rem; 
                     border-radius: 10px; 
                     border: 1.5px solid var(--border); 
+                    background: #ffffff;
+                    color: var(--text-main);
                     outline: none;
                 }
                 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
                 .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 2rem; }
-                .cancel-btn { padding: 0.75rem 1.5rem; border-radius: 10px; background: #f1f5f9; font-weight: 600; }
-                .save-btn { padding: 0.75rem 1.5rem; border-radius: 10px; background: var(--primary); color: white; font-weight: 600; }
+                .cancel-btn { padding: 0.75rem 1.5rem; border-radius: 10px; background: rgba(109, 139, 116, 0.1); color: var(--primary); font-weight: 600; }
+                .save-btn { padding: 0.75rem 1.5rem; border-radius: 10px; background: var(--primary); color: var(--bg-main); font-weight: 700; transition: all 0.2s; }
+                .save-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
             `}</style>
         </div>
     );

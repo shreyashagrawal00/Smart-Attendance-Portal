@@ -196,7 +196,7 @@ const AttendanceMarking = () => {
                     padding: 0.6rem 1rem;
                     border-radius: 12px;
                     border: 1.5px solid var(--border);
-                    background: white;
+                    background: var(--bg-card);
                     color: var(--text-main);
                     font-weight: 500;
                     outline: none;
@@ -209,14 +209,15 @@ const AttendanceMarking = () => {
                     gap: 8px;
                     padding: 0.6rem 1rem;
                     border-radius: 12px;
-                    font-weight: 600;
-                    color: var(--primary);
-                    background: white;
+                    font-weight: 700;
+                    color: var(--bg-main);
+                    background: var(--primary);
                     border: 1.5px solid var(--primary);
+                    transition: all 0.2s;
                 }
                 .mark-all-btn:hover:not(:disabled) {
-                    background: var(--primary);
-                    color: white;
+                    filter: brightness(1.1);
+                    transform: translateY(-1px);
                 }
                 .date-picker {
                     display: flex;
@@ -241,15 +242,15 @@ const AttendanceMarking = () => {
                     gap: 12px;
                     animation: slideDown 0.3s ease;
                 }
-                .status-msg.success { background: #ecfdf5; color: var(--success); border: 1px solid #d1fae5; }
-                .status-msg.error { background: #fef2f2; color: var(--danger); border: 1px solid #fee2e2; }
+                .status-msg.success { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+                .status-msg.error { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
                 
                 .list-container {
                     border-radius: 20px;
                     overflow: hidden;
                 }
                 .list-header {
-                    background: #f8fafc;
+                    background: rgba(109, 139, 116, 0.03);
                     padding: 1rem 2rem;
                     display: flex;
                     justify-content: space-between;
@@ -273,7 +274,7 @@ const AttendanceMarking = () => {
                     transition: all 0.2s;
                 }
                 .student-row:hover {
-                    background: #f1f5f9;
+                    background: rgba(109, 139, 116, 0.05);
                 }
                 .st-info {
                     display: flex;
@@ -307,7 +308,7 @@ const AttendanceMarking = () => {
                     border-radius: 10px;
                     font-weight: 600;
                     font-size: 0.85rem;
-                    background: #f1f5f9;
+                    background: rgba(109, 139, 116, 0.05);
                     color: var(--secondary);
                     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
                 }
@@ -319,29 +320,29 @@ const AttendanceMarking = () => {
                     transform: translateY(0);
                     scale: 0.98;
                 }
-                .status-btn.present.active { background: #d1fae5; color: var(--success); box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2); }
-                .status-btn.absent.active { background: #fee2e2; color: var(--danger); box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.2); }
-                .status-btn.late.active { background: #fef3c7; color: var(--warning); box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.2); }
+                .status-btn.present.active { background: rgba(109, 139, 116, 0.2); color: var(--primary); border: 1px solid rgba(109, 139, 116, 0.3); }
+                .status-btn.absent.active { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+                .status-btn.late.active { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
                 
                 .submit-section {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
                     padding: 1.5rem 2rem;
-                    background: white;
+                    background: var(--bg-card);
                     border-radius: 20px;
                     border: 1px solid var(--border);
                 }
                 .submit-section p { color: var(--secondary); font-size: 0.9rem; }
                 .submit-btn {
                     background: var(--primary);
-                    color: white;
+                    color: var(--bg-main);
                     padding: 0.875rem 1.5rem;
                     border-radius: 12px;
                     display: flex;
                     align-items: center;
                     gap: 10px;
-                    font-weight: 600;
+                    font-weight: 700;
                     transition: all 0.2s;
                 }
                 .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow); }

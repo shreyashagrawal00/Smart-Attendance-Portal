@@ -100,7 +100,7 @@ const Register = () => {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+                    background: var(--bg-main);
                     padding: 2rem;
                 }
                 .login-card {
@@ -124,7 +124,7 @@ const Register = () => {
                     align-items: center;
                     justify-content: center;
                     margin: 0 auto 1rem;
-                    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+                    box-shadow: 0 10px 15px -3px rgba(109, 139, 116, 0.2);
                 }
                 .login-header h1 {
                     font-size: 1.75rem;
@@ -156,16 +156,17 @@ const Register = () => {
                 }
                 .input-wrapper input {
                     width: 100%;
-                    padding: 0.75rem 1rem 0.75rem 3rem;
+                    padding: 0.875rem 1rem 0.875rem 3rem;
                     border: 1.5px solid var(--border);
                     border-radius: 12px;
                     font-size: 1rem;
                     transition: all 0.2s;
-                    background: white;
+                    background: #ffffff;
+                    color: var(--text-main);
                 }
                 .input-wrapper input:focus {
                     border-color: var(--primary);
-                    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+                    box-shadow: 0 0 0 4px rgba(109, 139, 116, 0.1);
                 }
                 .login-btn {
                     background: var(--primary);
@@ -186,12 +187,12 @@ const Register = () => {
                 }
                 .login-btn:disabled { opacity: 0.7; }
                 .error-msg {
-                    background: #fef2f2;
+                    background: rgba(239, 68, 68, 0.1);
                     color: var(--danger);
                     padding: 0.75rem;
                     border-radius: 8px;
                     font-size: 0.85rem;
-                    border: 1px solid #fee2e2;
+                    border: 1px solid rgba(239, 68, 68, 0.2);
                 }
                 .auth-footer {
                     text-align: center;

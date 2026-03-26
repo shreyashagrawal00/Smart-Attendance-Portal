@@ -101,12 +101,13 @@ const Sidebar = () => {
                     margin-bottom: 4px;
                 }
                 .nav-link:hover {
-                    background: #f1f5f9;
+                    background: rgba(109, 139, 116, 0.1);
                     color: var(--primary);
                 }
                 .nav-link.active {
-                    background: #eef2ff;
-                    color: var(--primary);
+                    background: var(--primary);
+                    color: var(--bg-main);
+                    font-weight: 700;
                 }
                 .sidebar-footer {
                     padding: 1.5rem;
@@ -125,7 +126,7 @@ const Sidebar = () => {
                     transition: all 0.2s;
                 }
                 .logout-btn:hover {
-                    background: #fef2f2;
+                    background: rgba(239, 68, 68, 0.1);
                 }
                 @media (max-width: 768px) {
                     .sidebar {

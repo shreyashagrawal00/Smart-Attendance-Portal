@@ -85,7 +85,7 @@ const Login = () => {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+                    background: var(--bg-main);
                     padding: 2rem;
                 }
                 .login-card {
@@ -109,7 +109,7 @@ const Login = () => {
                     align-items: center;
                     justify-content: center;
                     margin: 0 auto 1.5rem;
-                    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+                    box-shadow: 0 10px 15px -3px rgba(109, 139, 116, 0.2);
                 }
                 .login-header h1 {
                     font-size: 2rem;
@@ -147,11 +147,12 @@ const Login = () => {
                     border-radius: 12px;
                     font-size: 1rem;
                     transition: all 0.2s;
-                    background: white;
+                    background: #ffffff;
+                    color: var(--text-main);
                 }
                 .input-wrapper input:focus {
                     border-color: var(--primary);
-                    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+                    box-shadow: 0 0 0 4px rgba(109, 139, 116, 0.1);
                 }
                 .login-btn {
                     background: var(--primary);
@@ -170,19 +171,19 @@ const Login = () => {
                 .login-btn:hover:not(:disabled) {
                     background: var(--primary-hover);
                     transform: translateY(-1px);
-                    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+                    box-shadow: 0 10px 15px -3px rgba(109, 139, 116, 0.2);
                 }
                 .login-btn:disabled {
                     opacity: 0.7;
                     cursor: not-allowed;
                 }
                 .error-msg {
-                    background: #fef2f2;
+                    background: rgba(239, 68, 68, 0.1);
                     color: var(--danger);
                     padding: 0.75rem 1rem;
                     border-radius: 8px;
                     font-size: 0.9rem;
-                    border: 1px solid #fee2e2;
+                    border: 1px solid rgba(239, 68, 68, 0.2);
                 }
                 .auth-footer {
                     text-align: center;

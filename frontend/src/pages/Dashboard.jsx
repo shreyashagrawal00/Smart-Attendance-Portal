@@ -155,7 +155,7 @@ const Dashboard = () => {
                     padding: 0.75rem 1.25rem;
                     border-radius: 12px;
                     border: 1.5px solid var(--border);
-                    background: white;
+                    background: var(--bg-card);
                     color: var(--text-main);
                     font-weight: 500;
                     outline: none;
@@ -195,12 +195,12 @@ const Dashboard = () => {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    background: radial-gradient(circle, #eef2ff 0%, transparent 70%);
+                    background: rgba(109, 139, 116, 0.03);
                     margin-bottom: 1.5rem;
                     border-radius: 50%;
                     width: 200px;
                     margin: 0 auto 1.5rem;
-                    border: 8px solid #f1f5f9;
+                    border: 8px solid rgba(109, 139, 116, 0.05);
                 }
                 .chart-info {
                     display: flex;
@@ -223,7 +223,7 @@ const Dashboard = () => {
                     gap: 12px;
                     padding: 0.75rem;
                     border-radius: 10px;
-                    background: #f8fafc;
+                    background: rgba(109, 139, 116, 0.03);
                 }
                 .dot {
                     width: 10px;
@@ -244,14 +244,14 @@ const Dashboard = () => {
                 .action-btn {
                     padding: 0.875rem;
                     border-radius: 12px;
-                    font-weight: 600;
+                    font-weight: 700;
                     background: var(--primary);
-                    color: white;
+                    color: var(--bg-main);
                     transition: all 0.2s;
                 }
                 .action-btn.secondary {
-                    background: #f1f5f9;
-                    color: var(--text-main);
+                    background: rgba(109, 139, 116, 0.1);
+                    color: var(--primary);
                 }
                 .action-btn:hover {
                     opacity: 0.9;

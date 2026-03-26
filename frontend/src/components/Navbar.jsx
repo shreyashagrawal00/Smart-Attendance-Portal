@@ -39,7 +39,7 @@ const Navbar = () => {
                 .search-bar {
                     display: flex;
                     align-items: center;
-                    background: #f1f5f9;
+                    background: rgba(109, 139, 116, 0.05);
                     padding: 0.5rem 1rem;
                     border-radius: 10px;
                     width: 300px;
@@ -68,7 +68,7 @@ const Navbar = () => {
                     transition: all 0.2s;
                 }
                 .icon-btn:hover {
-                    background: #f1f5f9;
+                    background: rgba(109, 139, 116, 0.05);
                     color: var(--primary);
                 }
                 .user-profile {
@@ -89,13 +89,14 @@ const Navbar = () => {
                 }
                 .user-role {
                     font-size: 0.75rem;
-                    color: var(--secondary);
+                    color: var(--primary);
+                    opacity: 0.9;
                 }
                 .avatar {
                     width: 38px;
                     height: 38px;
-                    background: #eef2ff;
-                    color: var(--primary);
+                    background: var(--primary);
+                    color: white;
                     border-radius: 10px;
                     display: flex;
                     align-items: center;

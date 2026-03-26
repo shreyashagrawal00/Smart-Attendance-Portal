@@ -10,20 +10,27 @@ const AttendanceRecords = () => {
     const [classes, setClasses] = useState([]);
 
     useEffect(() => {
+        fetchInitialData();
+    }, []);
+
+    useEffect(() => {
         fetchRecords();
     }, [date, selectedClass]);
+
+    const fetchInitialData = async () => {
+        try {
+            const { data } = await api.get('/classes');
+            setClasses(data);
+        } catch (err) {
+            console.error('Failed to fetch classes', err);
+        }
+    };
 
     const fetchRecords = async () => {
         setLoading(true);
         try {
             const { data } = await api.get(`/attendance?date=${date}&class=${selectedClass}`);
             setRecords(data);
-            
-            // Extract unique classes for filter if not already done
-            if (classes.length === 0) {
-                const uniqueClasses = [...new Set(data.map(r => r.student.class))];
-                setClasses(uniqueClasses);
-            }
         } catch (err) {
             console.error(err);
         } finally {
@@ -62,7 +69,7 @@ const AttendanceRecords = () => {
                     <label><Filter size={16} /> Class</label>
                     <select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)}>
                         <option value="">All Classes</option>
-                        {classes.map(c => <option key={c} value={c}>{c}</option>)}
+                        {classes.map(c => <option key={c._id || c} value={c.name || c}>{c.name || c}</option>)}
                     </select>
                 </div>
                 <div className="search-mini">
@@ -138,8 +145,9 @@ const AttendanceRecords = () => {
                     align-items: center;
                 }
                 .export-btn {
-                    background: #f1f5f9;
-                    color: var(--text-main);
+                    background: var(--bg-card);
+                    color: var(--primary);
+                    border: 1px solid var(--border);
                     padding: 0.75rem 1.25rem;
                     border-radius: 12px;
                     display: flex;
@@ -148,7 +156,7 @@ const AttendanceRecords = () => {
                     font-weight: 600;
                     transition: all 0.2s;
                 }
-                .export-btn:hover { background: #e2e8f0; }
+                .export-btn:hover { background: rgba(109, 139, 116, 0.1); }
                 
                 .filter-bar {
                     padding: 1.25rem;
@@ -174,7 +182,7 @@ const AttendanceRecords = () => {
                     padding: 0.5rem 0.75rem;
                     border-radius: 8px;
                     border: 1px solid var(--border);
-                    background: white;
+                    background: var(--bg-card);
                     color: var(--text-main);
                     outline: none;
                     font-family: inherit;
@@ -184,7 +192,8 @@ const AttendanceRecords = () => {
                     display: flex;
                     align-items: center;
                     gap: 8px;
-                    background: #f1f5f9;
+                    background: var(--bg-card);
+                    border: 1px solid var(--border);
                     padding: 0.6rem 1rem;
                     border-radius: 10px;
                     width: 240px;
@@ -205,11 +214,11 @@ const AttendanceRecords = () => {
                     border-collapse: collapse;
                 }
                 .records-table th {
-                    background: #f8fafc;
+                    background: rgba(109, 139, 116, 0.05);
                     padding: 1rem 1.5rem;
                     text-align: left;
                     font-size: 0.85rem;
-                    color: var(--secondary);
+                    color: var(--primary);
                 }
                 .records-table td {
                     padding: 1rem 1.5rem;
@@ -224,7 +233,7 @@ const AttendanceRecords = () => {
                 .avatar-mini {
                     width: 32px;
                     height: 32px;
-                    background: #eef2ff;
+                    background: rgba(109, 139, 116, 0.1);
                     color: var(--primary);
                     border-radius: 8px;
                     display: flex;

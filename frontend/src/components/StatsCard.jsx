@@ -35,7 +35,8 @@ const StatsCard = ({ title, value, icon, color, trend }) => {
                 }
                 .stats-title {
                     font-size: 0.875rem;
-                    color: var(--secondary);
+                    color: var(--text-main);
+                    opacity: 0.7;
                     font-weight: 500;
                 }
                 .stats-value {

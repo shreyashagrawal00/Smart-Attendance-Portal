@@ -48,7 +48,7 @@ const Analytics = () => {
         { name: 'Fri', present: 95, absent: 5 },
     ];
 
-    const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444'];
+    const COLORS = ['#5F7161', '#6D8B74', '#D0C9C0', '#ef4444'];
 
     return (
         <div className="analytics">
@@ -82,17 +82,18 @@ const Analytics = () => {
                             <AreaChart data={weeklyData}>
                                 <defs>
                                     <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1}/>
-                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="#5F7161" stopOpacity={0.15}/>
+                                        <stop offset="95%" stopColor="#5F7161" stopOpacity={0}/>
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(95, 113, 97, 0.1)" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#5F7161aa', fontSize: 12}} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#5F7161aa', fontSize: 12}} />
                                 <Tooltip 
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                                    contentStyle={{ background: '#ffffff', borderRadius: '12px', border: '1px solid rgba(109, 139, 116, 0.2)', boxShadow: '0 10px 15px -3px rgba(95, 113, 97, 0.1)' }}
+                                    itemStyle={{ color: '#5F7161' }}
                                 />
-                                <Area type="monotone" dataKey="present" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorPresent)" />
+                                <Area type="monotone" dataKey="present" stroke="#5F7161" strokeWidth={3} fillOpacity={1} fill="url(#colorPresent)" />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
@@ -156,11 +157,13 @@ const Analytics = () => {
                                 { class: '11-A', count: 35 },
                                 { class: '12-A', count: 29 }
                             ]}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                <XAxis dataKey="class" axisLine={false} tickLine={false} />
-                                <YAxis axisLine={false} tickLine={false} />
-                                <Tooltip />
-                                <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(95, 113, 97, 0.1)" />
+                                <XAxis dataKey="class" axisLine={false} tickLine={false} tick={{fill: '#5F7161aa'}} />
+                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#5F7161aa'}} />
+                                <Tooltip 
+                                    contentStyle={{ background: '#ffffff', borderRadius: '12px', border: '1px solid rgba(109, 139, 116, 0.2)' }}
+                                />
+                                <Bar dataKey="count" fill="#5F7161" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -187,7 +190,7 @@ const Analytics = () => {
                     padding: 0.75rem 1.25rem;
                     border-radius: 12px;
                     border: 1.5px solid var(--border);
-                    background: white;
+                    background: var(--bg-card);
                     color: var(--text-main);
                     font-weight: 500;
                     outline: none;
@@ -242,8 +245,8 @@ const Analytics = () => {
                     align-items: center;
                     justify-content: center;
                 }
-                .insight-icon.alert { background: #fef2f2; color: var(--danger); }
-                .insight-icon.students { background: #eef2ff; color: var(--primary); }
+                .insight-icon.alert { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+                .insight-icon.students { background: rgba(109, 139, 116, 0.05); color: var(--primary); }
                 .insight-content h4 { font-size: 0.95rem; margin-bottom: 4px; }
                 .insight-content p { font-size: 0.85rem; color: var(--secondary); }
                 .view-link {
