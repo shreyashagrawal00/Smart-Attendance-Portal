@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const User = require('./models/User');
 const Student = require('./models/Student');
 const Attendance = require('./models/Attendance');
+const Class = require('./models/Class');
 
 dotenv.config();
 
@@ -36,6 +37,16 @@ const seedData = async () => {
         });
 
         console.log('Admin User Created (email: admin@school.com, password: password123)');
+
+        // Create Classes
+        await Class.create([
+            { name: '10-A', description: 'Science Section A' },
+            { name: '10-B', description: 'Science Section B' },
+            { name: '10-C', description: 'Commerce Section A' },
+            { name: '11-A', description: 'Higher Secondary A' },
+            { name: '12-A', description: 'Senior Secondary A' },
+        ]);
+        console.log('Classes Created!');
 
         // Create Students
         const students = await Student.create([

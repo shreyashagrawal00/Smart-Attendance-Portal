@@ -1,27 +1,60 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { Search, Plus, UserPlus, Edit, Trash2, Filter } from 'lucide-react';
+import { Search, Plus, UserPlus, Edit, Trash2, Filter, GraduationCap, ChevronLeft } from 'lucide-react';
 
 const StudentManagement = () => {
     const [students, setStudents] = useState([]);
+    const [classes, setClasses] = useState([]);
+    const [viewMode, setViewMode] = useState('classes'); // 'classes' or 'students'
+    const [selectedClass, setSelectedClass] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isClassModalOpen, setIsClassModalOpen] = useState(false);
     const [editingStudent, setEditingStudent] = useState(null);
     const [formData, setFormData] = useState({ name: '', rollNo: '', universityRollNo: '', class: '' });
+    const [classForm, setClassForm] = useState({ name: '', description: '' });
 
     useEffect(() => {
-        fetchStudents();
+        fetchInitialData();
     }, []);
 
-    const fetchStudents = async () => {
+    const fetchInitialData = async () => {
+        setLoading(true);
         try {
-            const { data } = await api.get('/students');
-            setStudents(data);
+            const [stRes, clRes] = await Promise.all([
+                api.get('/students'),
+                api.get('/classes')
+            ]);
+            setStudents(stRes.data);
+            setClasses(clRes.data);
         } catch (err) {
             console.error(err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSaveClass = async (e) => {
+        e.preventDefault();
+        try {
+            await api.post('/classes', classForm);
+            fetchInitialData();
+            setIsClassModalOpen(false);
+            setClassForm({ name: '', description: '' });
+        } catch (err) {
+            alert(err.response?.data?.message || 'Error saving class');
+        }
+    };
+
+    const handleDeleteClass = async (id) => {
+        if (window.confirm('Are you sure you want to delete this class? Students will remain but won\'t be grouped here.')) {
+            try {
+                await api.delete(`/classes/${id}`);
+                fetchInitialData();
+            } catch (err) {
+                alert('Error deleting class');
+            }
         }
     };
 
@@ -33,7 +66,7 @@ const StudentManagement = () => {
             } else {
                 await api.post('/students', formData);
             }
-            fetchStudents();
+            fetchInitialData();
             closeModal();
         } catch (err) {
             alert(err.response?.data?.message || 'Error saving student');
@@ -72,81 +105,167 @@ const StudentManagement = () => {
         setEditingStudent(null);
     };
 
-    const filteredStudents = students.filter(s => 
+    const filteredStudents = (selectedClass ? students.filter(s => s.class === selectedClass.name) : students).filter(s => 
         s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
         s.rollNo.includes(searchTerm) ||
-        (s.universityRollNo && s.universityRollNo.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        s.class.toLowerCase().includes(searchTerm.toLowerCase())
+        (s.universityRollNo && s.universityRollNo.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     return (
         <div className="student-management">
-            <header className="page-header">
-                <div>
-                    <h1>Student Management</h1>
-                    <p>Add, update, or remove students from the records.</p>
-                </div>
-                <button className="add-btn" onClick={() => openModal()}>
-                    <Plus size={20} />
-                    <span>Add Student</span>
-                </button>
-            </header>
+            <style>{`
+                .classes-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                    gap: 1.5rem;
+                    margin-top: 1rem;
+                }
+                .class-card {
+                    padding: 2rem;
+                    border-radius: 24px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 1rem;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    text-align: center;
+                    position: relative;
+                }
+                .class-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); }
+                .class-icon { 
+                    width: 60px; height: 60px; border-radius: 18px; background: #eef2ff; color: var(--primary);
+                    display: flex; align-items: center; justify-content: center;
+                }
+                .class-info h3 { font-size: 1.25rem; margin-bottom: 4px; }
+                .class-info p { font-size: 0.9rem; color: var(--secondary); }
+                .class-student-count { font-weight: 600; color: var(--primary); font-size: 0.85rem; }
+                
+                .back-btn { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--secondary); margin-bottom: 1rem; }
+                .class-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+            `}</style>
 
-            <div className="tbl-actions glass">
-                <div className="search-box">
-                    <Search size={18} />
-                    <input 
-                        type="text" 
-                        placeholder="Search name, roll no, or class..." 
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <button className="filter-btn">
-                    <Filter size={18} />
-                    <span>Filter</span>
-                </button>
-            </div>
+            {viewMode === 'classes' ? (
+                <>
+                    <header className="page-header">
+                        <div>
+                            <h1>Academic Classes</h1>
+                            <p>Manage school classes and departments.</p>
+                        </div>
+                        <button className="add-btn" onClick={() => setIsClassModalOpen(true)}>
+                            <Plus size={20} />
+                            <span>Add Class</span>
+                        </button>
+                    </header>
+                    <div className="classes-grid">
+                        {classes.map(cls => (
+                            <div key={cls._id} className="class-card glass" onClick={() => { setSelectedClass(cls); setViewMode('students'); }}>
+                                <div className="class-icon"><GraduationCap size={32} /></div>
+                                <div className="class-info">
+                                    <h3>{cls.name}</h3>
+                                    <p>{cls.description || 'No description'}</p>
+                                </div>
+                                <div className="class-student-count">
+                                    {students.filter(s => s.class === cls.name).length} Students
+                                </div>
+                                <button className="delete-class-mini" onClick={(e) => { e.stopPropagation(); handleDeleteClass(cls._id); }}>
+                                    <Trash2 size={14} />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </>
+            ) : (
+                <>
+                    <button className="back-btn" onClick={() => { setViewMode('classes'); setSelectedClass(null); }}>
+                        <ChevronLeft size={20} /> <span>Back to Categories</span>
+                    </button>
+                    <header className="class-header-row">
+                        <div>
+                            <h1>Class {selectedClass?.name}</h1>
+                            <p>{students.filter(s => s.class === selectedClass?.name).length} registered students.</p>
+                        </div>
+                        <button className="add-btn" onClick={() => { setFormData({...formData, class: selectedClass.name}); setIsModalOpen(true); }}>
+                            <Plus size={20} />
+                            <span>Add Student to {selectedClass?.name}</span>
+                        </button>
+                    </header>
 
-            <div className="table-container glass custom-scrollbar">
-                <table className="student-table">
-                    <thead>
-                        <tr>
-                            <th>Roll No</th>
-                            <th>Name</th>
-                            <th>Class</th>
-                            <th>Uni. Roll No</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
-                            <tr><td colSpan="5" className="loading">Loading students...</td></tr>
-                        ) : filteredStudents.length === 0 ? (
-                            <tr><td colSpan="5" className="empty">No students found.</td></tr>
-                        ) : (
-                            filteredStudents.map(student => (
-                                <tr key={student._id}>
-                                    <td><span className="roll-badge">{student.rollNo}</span></td>
-                                    <td className="st-name">{student.name}</td>
-                                    <td>{student.class}</td>
-                                    <td className="st-email">{student.universityRollNo}</td>
-                                    <td>
-                                        <div className="actions">
-                                            <button className="edit-btn" onClick={() => openModal(student)}>
-                                                <Edit size={16} />
-                                            </button>
-                                            <button className="delete-btn" onClick={() => handleDelete(student._id)}>
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
+                    <div className="tbl-actions glass">
+                        <div className="search-box">
+                            <Search size={18} />
+                            <input 
+                                type="text" 
+                                placeholder="Search by name, roll no..." 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="table-container glass custom-scrollbar">
+                        <table className="student-table">
+                            <thead>
+                                <tr>
+                                    <th>Roll No</th>
+                                    <th>Name</th>
+                                    <th>Uni. Roll No</th>
+                                    <th>Actions</th>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                            </thead>
+                            <tbody>
+                                {filteredStudents.map(student => (
+                                    <tr key={student._id}>
+                                        <td><span className="roll-badge">{student.rollNo}</span></td>
+                                        <td className="st-name">{student.name}</td>
+                                        <td className="st-email">{student.universityRollNo}</td>
+                                        <td>
+                                            <div className="actions">
+                                                <button className="edit-btn" onClick={() => openModal(student)}>
+                                                    <Edit size={16} />
+                                                </button>
+                                                <button className="delete-btn" onClick={() => handleDelete(student._id)}>
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </>
+            )}
+
+            {isClassModalOpen && (
+                <div className="modal-overlay">
+                    <div className="modal-content glass">
+                        <h2>Add New Class</h2>
+                        <form onSubmit={handleSaveClass}>
+                            <div className="form-group">
+                                <label>Class Name</label>
+                                <input 
+                                    type="text" required placeholder="e.g. 10-A"
+                                    value={classForm.name}
+                                    onChange={(e) => setClassForm({...classForm, name: e.target.value})}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Description</label>
+                                <input 
+                                    type="text" placeholder="e.g. Science Batch 2024"
+                                    value={classForm.description}
+                                    onChange={(e) => setClassForm({...classForm, description: e.target.value})}
+                                />
+                            </div>
+                            <div className="modal-actions">
+                                <button type="button" className="cancel-btn" onClick={() => setIsClassModalOpen(false)}>Cancel</button>
+                                <button type="submit" className="save-btn">Create Class</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             {isModalOpen && (
                 <div className="modal-overlay">
@@ -156,8 +275,7 @@ const StudentManagement = () => {
                             <div className="form-group">
                                 <label>Full Name</label>
                                 <input 
-                                    type="text" 
-                                    required 
+                                    type="text" required 
                                     value={formData.name}
                                     onChange={(e) => setFormData({...formData, name: e.target.value})}
                                 />
@@ -166,8 +284,7 @@ const StudentManagement = () => {
                                 <div className="form-group">
                                     <label>Roll Number</label>
                                     <input 
-                                        type="text" 
-                                        required 
+                                        type="text" required 
                                         value={formData.rollNo}
                                         onChange={(e) => setFormData({...formData, rollNo: e.target.value})}
                                     />
@@ -175,8 +292,7 @@ const StudentManagement = () => {
                                 <div className="form-group">
                                     <label>Class/Section</label>
                                     <input 
-                                        type="text" 
-                                        required 
+                                        type="text" required 
                                         value={formData.class}
                                         onChange={(e) => setFormData({...formData, class: e.target.value})}
                                     />
@@ -185,8 +301,7 @@ const StudentManagement = () => {
                             <div className="form-group">
                                 <label>University Roll Number</label>
                                 <input 
-                                    type="text" 
-                                    required 
+                                    type="text" required 
                                     value={formData.universityRollNo}
                                     onChange={(e) => setFormData({...formData, universityRollNo: e.target.value})}
                                 />
@@ -281,6 +396,24 @@ const StudentManagement = () => {
                     padding: 1.25rem 1.5rem;
                     border-bottom: 1px solid var(--border);
                 }
+                .delete-class-mini {
+                    position: absolute;
+                    top: 15px;
+                    right: 15px;
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: var(--danger);
+                    background: #fef2f2;
+                    opacity: 0;
+                    transition: all 0.2s;
+                }
+                .class-card:hover .delete-class-mini { opacity: 1; }
+                .delete-class-mini:hover { background: var(--danger); color: white; }
+                
                 .roll-badge {
                     background: #eef2ff;
                     color: var(--primary);

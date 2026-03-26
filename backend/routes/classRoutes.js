@@ -24,11 +24,13 @@ router.post('/', protect, async (req, res) => {
         if (classExists) {
             return res.status(400).json({ message: 'Class already exists' });
         }
-        const newClass = await Class.create({ 
-            name, 
-            description,
-            teacher: req.user._id 
-        });
+        
+        const classData = { name, description };
+        if (req.user && req.user._id) {
+            classData.teacher = req.user._id;
+        }
+
+        const newClass = await Class.create(classData);
         res.status(201).json(newClass);
     } catch (error) {
         res.status(400).json({ message: error.message });
