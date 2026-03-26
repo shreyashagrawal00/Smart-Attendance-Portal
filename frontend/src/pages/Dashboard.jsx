@@ -13,17 +13,31 @@ const Dashboard = () => {
         todayAbsent: 0
     });
     const [loading, setLoading] = useState(true);
+    const [classes, setClasses] = useState([]);
+    const [selectedClass, setSelectedClass] = useState('All Classes');
+
+    useEffect(() => {
+        const fetchClasses = async () => {
+            try {
+                const { data } = await api.get('/classes');
+                setClasses(data);
+            } catch (err) {
+                console.error("Failed to load classes:", err);
+            }
+        };
+        fetchClasses();
+    }, []);
 
     useEffect(() => {
         const fetchStats = async () => {
+            setLoading(true);
             try {
-                const { data } = await api.get('/attendance/analytics');
-                // For demo, if data is empty, use some defaults
+                const { data } = await api.get(`/attendance/analytics?class=${encodeURIComponent(selectedClass)}`);
                 setStats({
                     totalStudents: data.totalStudents || 0,
                     attendancePercentage: Math.round(data.attendancePercentage) || 0,
                     todayPresent: data.presentCount || 0,
-                    todayAbsent: (data.totalStudents - data.presentCount) || 0
+                    todayAbsent: data.absentCount !== undefined ? data.absentCount : (data.totalStudents - data.presentCount) || 0
                 });
             } catch (err) {
                 console.error(err);
@@ -32,7 +46,7 @@ const Dashboard = () => {
             }
         };
         fetchStats();
-    }, []);
+    }, [selectedClass]);
 
     return (
         <div className="dashboard">
@@ -41,9 +55,21 @@ const Dashboard = () => {
                     <h1>Dashboard Overview</h1>
                     <p>Welcome back! Here's what's happening today.</p>
                 </div>
-                <div className="date-display glass">
-                    <Calendar size={18} />
-                    <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                <div className="header-actions">
+                    <select 
+                        className="class-selector glass"
+                        value={selectedClass}
+                        onChange={(e) => setSelectedClass(e.target.value)}
+                    >
+                        <option value="All Classes">All Classes</option>
+                        {classes.map(cls => (
+                            <option key={cls._id} value={cls.name}>{cls.name}</option>
+                        ))}
+                    </select>
+                    <div className="date-display glass">
+                        <Calendar size={18} />
+                        <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                    </div>
                 </div>
             </header>
 
@@ -119,6 +145,22 @@ const Dashboard = () => {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
+                }
+                .header-actions {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                }
+                .class-selector {
+                    padding: 0.75rem 1.25rem;
+                    border-radius: 12px;
+                    border: 1.5px solid var(--border);
+                    background: white;
+                    color: var(--text-main);
+                    font-weight: 500;
+                    outline: none;
+                    cursor: pointer;
+                    min-width: 150px;
                 }
                 .date-display {
                     display: flex;

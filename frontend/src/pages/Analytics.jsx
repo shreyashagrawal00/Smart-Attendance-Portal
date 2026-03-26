@@ -9,11 +9,26 @@ import { TrendingUp, AlertTriangle, Users, BookOpen } from 'lucide-react';
 const Analytics = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [classes, setClasses] = useState([]);
+    const [selectedClass, setSelectedClass] = useState('All Classes');
+
+    useEffect(() => {
+        const fetchClasses = async () => {
+            try {
+                const { data } = await api.get('/classes');
+                setClasses(data);
+            } catch (err) {
+                console.error("Failed to load classes:", err);
+            }
+        };
+        fetchClasses();
+    }, []);
 
     useEffect(() => {
         const fetchAnalytics = async () => {
+            setLoading(true);
             try {
-                const { data } = await api.get('/attendance/analytics');
+                const { data } = await api.get(`/attendance/analytics?class=${encodeURIComponent(selectedClass)}`);
                 setStats(data);
             } catch (err) {
                 console.error(err);
@@ -22,7 +37,7 @@ const Analytics = () => {
             }
         };
         fetchAnalytics();
-    }, []);
+    }, [selectedClass]);
 
     // Mock data for charts if backend doesn't provide enough history yet
     const weeklyData = [
@@ -41,6 +56,18 @@ const Analytics = () => {
                 <div>
                     <h1>Insights & Analytics</h1>
                     <p>Deep dive into attendance patterns and student performance.</p>
+                </div>
+                <div className="header-actions">
+                    <select 
+                        className="class-selector glass"
+                        value={selectedClass}
+                        onChange={(e) => setSelectedClass(e.target.value)}
+                    >
+                        <option value="All Classes">All Classes</option>
+                        {classes.map(cls => (
+                            <option key={cls._id} value={cls.name}>{cls.name}</option>
+                        ))}
+                    </select>
                 </div>
             </header>
 
@@ -145,6 +172,27 @@ const Analytics = () => {
                     display: flex;
                     flex-direction: column;
                     gap: 1.5rem;
+                }
+                .page-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                .header-actions {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                }
+                .class-selector {
+                    padding: 0.75rem 1.25rem;
+                    border-radius: 12px;
+                    border: 1.5px solid var(--border);
+                    background: white;
+                    color: var(--text-main);
+                    font-weight: 500;
+                    outline: none;
+                    cursor: pointer;
+                    min-width: 150px;
                 }
                 .analytics-grid {
                     display: grid;
