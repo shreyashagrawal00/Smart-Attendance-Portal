@@ -8,10 +8,11 @@ import {
     BarChart3, 
     LogOut,
     GraduationCap,
-    Info
+    Info,
+    X
 } from 'lucide-react';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, closeSidebar }) => {
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -30,12 +31,15 @@ const Sidebar = () => {
     ];
 
     return (
-        <aside className="sidebar">
+        <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
             <div className="sidebar-header">
                 <div className="brand">
                     <GraduationCap className="logo-icon" size={32} />
                     <span>SmartAttend</span>
                 </div>
+                <button className="mobile-close-btn" onClick={closeSidebar}>
+                    <X size={24} />
+                </button>
             </div>
             <nav className="sidebar-nav custom-scrollbar">
                 <ul>
@@ -44,6 +48,7 @@ const Sidebar = () => {
                             <NavLink 
                                 to={item.path} 
                                 className={({ isActive }) => isActive ? "nav-link active" : "nav-link"}
+                                onClick={closeSidebar}
                             >
                                 {item.icon}
                                 <span>{item.name}</span>
@@ -74,6 +79,9 @@ const Sidebar = () => {
                 }
                 .sidebar-header {
                     padding: 2rem 1.5rem;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
                 }
                 .brand {
                     display: flex;
@@ -82,6 +90,11 @@ const Sidebar = () => {
                     font-size: 1.5rem;
                     font-weight: 700;
                     color: var(--primary);
+                }
+                .mobile-close-btn {
+                    display: none;
+                    background: transparent;
+                    color: var(--secondary);
                 }
                 .logo-icon {
                     color: var(--primary);
@@ -133,6 +146,12 @@ const Sidebar = () => {
                 @media (max-width: 768px) {
                     .sidebar {
                         transform: translateX(-100%);
+                    }
+                    .sidebar.open {
+                        transform: translateX(0);
+                    }
+                    .mobile-close-btn {
+                        display: block;
                     }
                 }
             `}</style>

@@ -323,6 +323,19 @@ const Analytics = () => {
                         grid-template-columns: 1fr;
                     }
                 }
+                @media (max-width: 768px) {
+                    .page-header {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 1rem;
+                    }
+                    .header-actions {
+                        width: 100%;
+                    }
+                    .class-selector {
+                        width: 100%;
+                    }
+                }
             `}</style>
         </div>
     );

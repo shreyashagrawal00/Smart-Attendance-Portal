@@ -1,14 +1,19 @@
 import React from 'react';
-import { Search, Bell, User } from 'lucide-react';
+import { Search, Bell, User, Menu } from 'lucide-react';
 
-const Navbar = () => {
+const Navbar = ({ toggleSidebar }) => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
     return (
         <header className="navbar glass">
-            <div className="search-bar">
-                <Search size={18} className="search-icon" />
-                <input type="text" placeholder="Search students, classes..." />
+            <div className="navbar-left">
+                <button className="mobile-menu-btn" onClick={toggleSidebar}>
+                    <Menu size={24} />
+                </button>
+                <div className="search-bar">
+                    <Search size={18} className="search-icon" />
+                    <input type="text" placeholder="Search students, classes..." />
+                </div>
             </div>
             <div className="nav-actions">
                 <button className="icon-btn">
@@ -36,13 +41,27 @@ const Navbar = () => {
                     z-index: 900;
                     border-bottom: 1px solid var(--border);
                 }
+                .navbar-left {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    flex: 1;
+                }
+                .mobile-menu-btn {
+                    display: none;
+                    background: transparent;
+                    color: var(--text-main);
+                    padding: 8px;
+                    border-radius: 8px;
+                }
                 .search-bar {
                     display: flex;
                     align-items: center;
                     background: rgba(109, 139, 116, 0.05);
                     padding: 0.5rem 1rem;
                     border-radius: 10px;
-                    width: 300px;
+                    width: 100%;
+                    max-width: 300px;
                     gap: 10px;
                 }
                 .search-bar input {
@@ -101,6 +120,20 @@ const Navbar = () => {
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                }
+                @media (max-width: 768px) {
+                    .mobile-menu-btn {
+                        display: flex;
+                    }
+                    .search-bar {
+                        display: none; /* Hide full search bar on very small screens to save space */
+                    }
+                    .user-info {
+                        display: none; /* Hide name/role text on mobile, just show avatar */
+                    }
+                    .navbar {
+                        padding: 0 1rem;
+                    }
                 }
             `}</style>
         </header>

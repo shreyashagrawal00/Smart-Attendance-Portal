@@ -291,9 +291,32 @@ const AttendanceRecords = () => {
                     align-items: center;
                     gap: 1rem;
                 }
-                .empty-icon { color: var(--border); }
-                .empty-state h3 { color: var(--text-main); }
-                .empty-state p { color: var(--secondary); }
+                @media (max-width: 768px) {
+                    .page-header {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 1rem;
+                    }
+                    .export-btn {
+                        width: 100%;
+                        justify-content: center;
+                    }
+                    .filter-bar {
+                        flex-direction: column;
+                        align-items: stretch;
+                        gap: 1.5rem;
+                    }
+                    .search-mini {
+                        margin-left: 0;
+                        width: 100%;
+                    }
+                    .table-wrapper {
+                        overflow-x: auto;
+                    }
+                    .records-table {
+                        min-width: 600px;
+                    }
+                }
             `}</style>
         </div>
     );

@@ -262,6 +262,21 @@ const Dashboard = () => {
                         grid-template-columns: 1fr;
                     }
                 }
+                @media (max-width: 768px) {
+                    .page-header {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 1rem;
+                    }
+                    .header-actions {
+                        flex-wrap: wrap;
+                        width: 100%;
+                    }
+                    .class-selector, .date-display {
+                        flex: 1;
+                        text-align: center;
+                    }
+                }
             `}</style>
         </div>
     );

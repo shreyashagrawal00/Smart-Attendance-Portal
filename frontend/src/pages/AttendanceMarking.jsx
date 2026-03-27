@@ -348,9 +348,50 @@ const AttendanceMarking = () => {
                 .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow); }
                 .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
                 
-                @keyframes slideDown {
-                    from { transform: translateY(-10px); opacity: 0; }
-                    to { transform: translateY(0); opacity: 1; }
+                @media (max-width: 1024px) {
+                    .header-actions {
+                        flex-wrap: wrap;
+                    }
+                }
+                @media (max-width: 768px) {
+                    .page-header {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 1rem;
+                    }
+                    .header-actions {
+                        width: 100%;
+                    }
+                    .class-selector, .mark-all-btn, .date-picker {
+                        width: 100%;
+                        justify-content: center;
+                    }
+                    .student-row {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 1rem;
+                        padding: 1.5rem;
+                    }
+                    .st-status-actions {
+                        width: 100%;
+                        display: grid;
+                        grid-template-columns: repeat(3, 1fr);
+                        gap: 8px;
+                    }
+                    .status-btn {
+                        width: 100%;
+                        justify-content: center;
+                        padding: 10px 4px;
+                    }
+                    .submit-section {
+                        flex-direction: column;
+                        gap: 1rem;
+                        text-align: center;
+                    }
+                    .submit-btn {
+                        width: 100%;
+                        justify-content: center;
+                    }
                 }
             `}</style>
         </div>

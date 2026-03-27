@@ -481,7 +481,32 @@ const StudentManagement = () => {
                 .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 2rem; }
                 .cancel-btn { padding: 0.75rem 1.5rem; border-radius: 10px; background: rgba(109, 139, 116, 0.1); color: var(--primary); font-weight: 600; }
                 .save-btn { padding: 0.75rem 1.5rem; border-radius: 10px; background: var(--primary); color: var(--bg-main); font-weight: 700; transition: all 0.2s; }
-                .save-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+                @media (max-width: 768px) {
+                    .page-header {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 1rem;
+                    }
+                    .add-btn {
+                        width: 100%;
+                        justify-content: center;
+                    }
+                    .form-row {
+                        grid-template-columns: 1fr;
+                    }
+                    .tbl-actions {
+                        flex-direction: column;
+                        align-items: stretch;
+                    }
+                    .search-box {
+                        width: 100%;
+                    }
+                    .class-header-row {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 1rem;
+                    }
+                }
             `}</style>
         </div>
     );
