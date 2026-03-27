@@ -56,47 +56,123 @@ router.get('/analytics', protect, async (req, res) => {
     try {
         const { class: studentClass } = req.query;
         const Student = require('../models/Student');
+        const Class = require('../models/Class');
         
-        // 1. Total students
+        // --- 1. Basic Stats & Enrollment per Class ---
         let studentQuery = {};
         if (studentClass && studentClass !== 'All Classes') {
             studentQuery.class = studentClass;
         }
-        const totalStudents = await Student.countDocuments(studentQuery);
+        const totalStudentsCount = await Student.countDocuments(studentQuery);
+        
+        const allAvailableClasses = await Class.find({});
+        const classDistribution = await Promise.all(allAvailableClasses.map(async (cls) => ({
+            class: cls.name,
+            count: await Student.countDocuments({ class: cls.name })
+        })));
 
-        // 2. All attendance records for percentages
-        let attendanceRecords = await Attendance.find({}).populate('student');
+        // --- 2. Overall Status Distribution ---
+        let statusAggMatch = {};
         if (studentClass && studentClass !== 'All Classes') {
-            attendanceRecords = attendanceRecords.filter(a => a.student && a.student.class === studentClass);
+            // Need to join with student to filter by class
+            const classStudents = await Student.find({ class: studentClass }).select('_id');
+            statusAggMatch.student = { $in: classStudents.map(s => s._id) };
         }
+        
+        const overallStatus = await Attendance.aggregate([
+            { $match: statusAggMatch },
+            { $group: { _id: '$status', count: { $sum: 1 } } }
+        ]);
 
-        const presentCountAllTime = attendanceRecords.filter(a => a.status === 'Present').length;
-        const totalRecords = attendanceRecords.length;
-        const attendancePercentage = totalRecords > 0 ? (presentCountAllTime / totalRecords) * 100 : 0;
+        const statusDistribution = [
+            { name: 'Present', value: overallStatus.find(s => s._id === 'Present')?.count || 0 },
+            { name: 'Absent', value: overallStatus.find(s => s._id === 'Absent')?.count || 0 },
+            { name: 'Late', value: overallStatus.find(s => s._id === 'Late')?.count || 0 }
+        ];
 
-        // 3. Today's specifically
+        // --- 3. Today's specifically (for Dashboard) ---
         const startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0);
-        
-        let todaysRecords = await Attendance.find({
-            date: { $gte: startOfToday }
-        }).populate('student');
-        
+        const endOfToday = new Date();
+        endOfToday.setHours(23, 59, 59, 999);
+
+        let todayQuery = { date: { $gte: startOfToday, $lte: endOfToday } };
         if (studentClass && studentClass !== 'All Classes') {
-            todaysRecords = todaysRecords.filter(a => a.student && a.student.class === studentClass);
+            const classStudents = await Student.find({ class: studentClass }).select('_id');
+            todayQuery.student = { $in: classStudents.map(s => s._id) };
         }
 
-        const presentCount = todaysRecords.filter(a => a.status === 'Present').length;
-        const absentCount = todaysRecords.filter(a => a.status === 'Absent').length;
-        // If some students are unmarked today, the frontend can calculate absent as totalStudents - presentCount,
-        // but it's simpler to just pass exactly who is present/absent today.
+        const todayRecords = await Attendance.find(todayQuery);
+        const todayPresent = todayRecords.filter(r => r.status === 'Present').length;
+        const todayAbsent = todayRecords.filter(r => r.status === 'Absent').length;
+
+        // --- 4. Weekly Trend (Last 7 Days) ---
+        const last7Days = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            d.setHours(0, 0, 0, 0);
+            const endD = new Date(d);
+            endD.setHours(23, 59, 59, 999);
+            
+            let dayQuery = { date: { $gte: d, $lte: endD } };
+            if (studentClass && studentClass !== 'All Classes') {
+                const classStudents = await Student.find({ class: studentClass }).select('_id');
+                dayQuery.student = { $in: classStudents.map(s => s._id) };
+            }
+            
+            const dayRecords = await Attendance.find(dayQuery);
+            const present = dayRecords.filter(r => r.status === 'Present').length;
+            const absent = dayRecords.filter(r => r.status === 'Absent').length;
+            
+            last7Days.push({
+                name: d.toLocaleDateString('en-US', { weekday: 'short' }),
+                fullDate: d,
+                present,
+                absent
+            });
+        }
+
+        // --- 4. Low Attendance Calculation (< 75%) ---
+        // Get all students and check their attendance
+        const allStudents = await Student.find(studentQuery);
+        const lowAttendanceStudents = [];
+        let totalPresentAllTime = 0;
+        let totalPossibleAllTime = 0;
+
+        for (const student of allStudents) {
+            const studentRecords = await Attendance.find({ student: student._id });
+            const presentCount = studentRecords.filter(r => r.status === 'Present').length;
+            const totalCount = studentRecords.length;
+            
+            totalPresentAllTime += presentCount;
+            totalPossibleAllTime += totalCount;
+
+            const percentage = totalCount > 0 ? (presentCount / totalCount) * 100 : 100;
+            if (percentage < 75 && totalCount > 0) {
+                lowAttendanceStudents.push({ 
+                    name: student.name, 
+                    rollNo: student.rollNo, 
+                    percentage: percentage.toFixed(1) 
+                });
+            }
+        }
+
+        const overallAttendancePercentage = totalPossibleAllTime > 0 
+            ? (totalPresentAllTime / totalPossibleAllTime) * 100 
+            : 0;
 
         res.json({
-            totalStudents,
-            attendancePercentage,
-            totalRecords,
-            presentCount,
-            absentCount
+            totalStudents: totalStudentsCount,
+            attendancePercentage: overallAttendancePercentage.toFixed(1),
+            statusDistribution,
+            classDistribution,
+            weeklyTrend: last7Days,
+            lowAttendanceCount: lowAttendanceStudents.length,
+            lowAttendanceList: lowAttendanceStudents,
+            totalClasses: allAvailableClasses.length,
+            presentCount: todayPresent,
+            absentCount: todayAbsent
         });
     } catch (error) {
         res.status(500).json({ message: error.message });

@@ -11,6 +11,7 @@ const Analytics = () => {
     const [loading, setLoading] = useState(true);
     const [classes, setClasses] = useState([]);
     const [selectedClass, setSelectedClass] = useState('All Classes');
+    const [showLowAttendanceModal, setShowLowAttendanceModal] = useState(false);
 
     useEffect(() => {
         const fetchClasses = async () => {
@@ -40,13 +41,7 @@ const Analytics = () => {
     }, [selectedClass]);
 
     // Mock data for charts if backend doesn't provide enough history yet
-    const weeklyData = [
-        { name: 'Mon', present: 85, absent: 15 },
-        { name: 'Tue', present: 92, absent: 8 },
-        { name: 'Wed', present: 78, absent: 22 },
-        { name: 'Thu', present: 88, absent: 12 },
-        { name: 'Fri', present: 95, absent: 5 },
-    ];
+    // No mock data needed anymore, using stats from API
 
     const COLORS = ['#5F7161', '#6D8B74', '#D0C9C0', '#ef4444'];
 
@@ -79,7 +74,7 @@ const Analytics = () => {
                     </div>
                     <div className="chart-container">
                         <ResponsiveContainer width="100%" height={300}>
-                            <AreaChart data={weeklyData}>
+                            <AreaChart data={stats?.weeklyTrend || []}>
                                 <defs>
                                     <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#5F7161" stopOpacity={0.15}/>
@@ -106,8 +101,8 @@ const Analytics = () => {
                         </div>
                         <div className="insight-content">
                             <h4>Low Attendance Alert</h4>
-                            <p>5 students have below 75% attendance this month.</p>
-                            <button className="view-link">View List</button>
+                            <p>{stats?.lowAttendanceCount || 0} students have below 75% attendance this month.</p>
+                            <button className="view-link" onClick={() => setShowLowAttendanceModal(true)}>View List</button>
                         </div>
                     </div>
                     <div className="insight-card glass">
@@ -116,7 +111,7 @@ const Analytics = () => {
                         </div>
                         <div className="insight-content">
                             <h4>Total Enrollment</h4>
-                            <p>Current total of 124 students across 6 classes.</p>
+                            <p>Current total of {stats?.totalStudents || 0} students across {stats?.totalClasses || 0} classes.</p>
                         </div>
                     </div>
                 </div>
@@ -127,10 +122,10 @@ const Analytics = () => {
                         <ResponsiveContainer width="100%" height={250}>
                             <PieChart>
                                 <Pie
-                                    data={[
-                                        { name: 'Present', value: 85 },
-                                        { name: 'Absent', value: 10 },
-                                        { name: 'Late', value: 5 }
+                                    data={stats?.statusDistribution || [
+                                        { name: 'Present', value: 0 },
+                                        { name: 'Absent', value: 0 },
+                                        { name: 'Late', value: 0 }
                                     ]}
                                     innerRadius={60}
                                     outerRadius={80}
@@ -151,12 +146,7 @@ const Analytics = () => {
                     <h3>Enrollment by Class</h3>
                     <div className="chart-container">
                         <ResponsiveContainer width="100%" height={250}>
-                            <BarChart data={[
-                                { class: '10-A', count: 32 },
-                                { class: '10-B', count: 28 },
-                                { class: '11-A', count: 35 },
-                                { class: '12-A', count: 29 }
-                            ]}>
+                            <BarChart data={stats?.classDistribution || []}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(95, 113, 97, 0.1)" />
                                 <XAxis dataKey="class" axisLine={false} tickLine={false} tick={{fill: '#5F7161aa'}} />
                                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#5F7161aa'}} />
@@ -169,6 +159,44 @@ const Analytics = () => {
                     </div>
                 </div>
             </div>
+
+            {showLowAttendanceModal && (
+                <div className="modal-overlay" onClick={() => setShowLowAttendanceModal(false)}>
+                    <div className="modal-content glass" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>Low Attendance Students</h2>
+                            <p>Students with attendance below 75%</p>
+                        </div>
+                        <div className="low-attendance-list custom-scrollbar">
+                            {stats?.lowAttendanceList?.length > 0 ? (
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Roll No</th>
+                                            <th>Name</th>
+                                            <th>Attendance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {stats.lowAttendanceList.map((st, idx) => (
+                                            <tr key={idx}>
+                                                <td>{st.rollNo}</td>
+                                                <td>{st.name}</td>
+                                                <td className="st-percent">{st.percentage}%</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <p className="empty-modal">No students found with low attendance.</p>
+                            )}
+                        </div>
+                        <div className="modal-actions">
+                            <button className="save-btn" onClick={() => setShowLowAttendanceModal(false)}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <style>{`
                 .analytics {
@@ -195,8 +223,41 @@ const Analytics = () => {
                     font-weight: 500;
                     outline: none;
                     cursor: pointer;
-                    min-width: 150px;
+                    min-width: 155px;
                 }
+                .low-attendance-list {
+                    max-height: 400px;
+                    overflow-y: auto;
+                    margin: 1.5rem 0;
+                }
+                .low-attendance-list table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                .low-attendance-list th {
+                    text-align: left;
+                    padding: 0.75rem;
+                    border-bottom: 1px solid var(--border);
+                    color: var(--secondary);
+                    font-size: 0.85rem;
+                }
+                .low-attendance-list td {
+                    padding: 0.75rem;
+                    border-bottom: 1px solid var(--border);
+                    font-size: 0.95rem;
+                }
+                .st-percent {
+                    color: var(--danger);
+                    font-weight: 700;
+                }
+                .empty-modal {
+                    text-align: center;
+                    padding: 2rem;
+                    color: var(--secondary);
+                }
+                .modal-header { margin-bottom: 1rem; }
+                .modal-header h2 { margin-bottom: 4px; }
+                .modal-header p { color: var(--secondary); font-size: 0.9rem; }
                 .analytics-grid {
                     display: grid;
                     grid-template-columns: 2fr 1fr;

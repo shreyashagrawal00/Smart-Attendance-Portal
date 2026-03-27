@@ -1,24 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
 
 :root {
-  --primary: #5F7161;
-  --primary-hover: #4d5d4f;
-  --secondary: #6D8B74;
+  --primary: #4B5D4E;
+  --primary-hover: #3D4C40;
+  --secondary: #5B7361;
   --bg-main: #EFEAD8;
   --bg-card: #ffffff;
-  --text-main: #5F7161;
-  --text-muted: #6D8B74ee;
-  --success: #6D8B74;
+  --text-main: #2E3A2F;
+  --text-muted: #5B7361;
+  --success: #5B7361;
   --danger: #ef4444;
   --warning: #f59e0b;
-  --border: rgba(109, 139, 116, 0.2);
-  --shadow: 0 4px 6px -1px rgb(95 113 97 / 0.1), 0 2px 4px -2px rgb(95 113 97 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(95 113 97 / 0.1), 0 4px 6px -4px rgb(95 113 97 / 0.1);
+  --border: rgba(91, 115, 97, 0.2);
+  --shadow: 0 4px 6px -1px rgb(75 93 78 / 0.1), 0 2px 4px -2px rgb(75 93 78 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(75 93 78 / 0.1), 0 4px 6px -4px rgb(75 93 78 / 0.1);
   --sidebar-width: 260px;
 }
 
 /* Light text on dark green buttons */
-button, .btn, .add-btn, .save-btn, .submit-btn, .action-btn, .login-btn, .register-btn {
+button:not(.logout-btn), .btn, .add-btn, .save-btn, .submit-btn, .action-btn, .login-btn, .register-btn {
   color: #EFEAD8 !important;
   font-weight: 600 !important;
 }

@@ -47,6 +47,32 @@ const AttendanceRecords = () => {
         }
     };
 
+    const handleExportCSV = () => {
+        if (records.length === 0) return alert('No records to export');
+        
+        const headers = ['Student Name', 'Roll No', 'Class', 'Status', 'Date'];
+        const csvRows = [
+            headers.join(','),
+            ...records.map(r => [
+                `"${r.student.name}"`,
+                r.student.rollNo,
+                r.student.class,
+                r.status,
+                date
+            ].join(','))
+        ];
+        
+        const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('hidden', '');
+        a.setAttribute('href', url);
+        a.setAttribute('download', `attendance_${date}_${selectedClass || 'all'}.csv`);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+
     return (
         <div className="attendance-records">
             <header className="page-header">
@@ -54,7 +80,7 @@ const AttendanceRecords = () => {
                     <h1>Attendance History</h1>
                     <p>Review and filter past attendance records.</p>
                 </div>
-                <button className="export-btn">
+                <button className="export-btn" onClick={handleExportCSV}>
                     <Download size={18} />
                     <span>Export CSV</span>
                 </button>
