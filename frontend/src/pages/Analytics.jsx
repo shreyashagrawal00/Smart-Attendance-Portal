@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { 
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-    PieChart, Pie, Cell, LineChart, Line, AreaChart, Area
+    PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, Legend
 } from 'recharts';
-import { TrendingUp, AlertTriangle, Users, BookOpen } from 'lucide-react';
+import { TrendingUp, AlertTriangle, Users, BookOpen, ChevronRight, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
 
 const Analytics = () => {
     const [stats, setStats] = useState(null);
@@ -40,86 +40,136 @@ const Analytics = () => {
         fetchAnalytics();
     }, [selectedClass]);
 
-    // Mock data for charts if backend doesn't provide enough history yet
-    // No mock data needed anymore, using stats from API
-
-    const COLORS = ['#2D6A4F', '#C1121F', '#E85D04', '#6D8B74'];
+    const COLORS = ['#4B6B50', '#6B8F72', '#C1121F', '#E85D04', '#7A9980'];
+    const CHART_TEXT_COLOR = '#3D5941';
 
     return (
-        <div className="analytics">
+        <div className="analytics fade-in">
             <header className="page-header">
-                <div>
+                <div className="header-title">
                     <h1>Insights & Analytics</h1>
-                    <p>Deep dive into attendance patterns and student performance.</p>
+                    <p>Visualizing attendance patterns and performance metrics.</p>
                 </div>
                 <div className="header-actions">
-                    <select 
-                        className="class-selector glass"
-                        value={selectedClass}
-                        onChange={(e) => setSelectedClass(e.target.value)}
-                    >
-                        <option value="All Classes">All Classes</option>
-                        {classes.map(cls => (
-                            <option key={cls._id} value={cls.name}>{cls.name}</option>
-                        ))}
-                    </select>
+                    <div className="selector-wrapper glass">
+                        <select 
+                            className="class-selector"
+                            value={selectedClass}
+                            onChange={(e) => setSelectedClass(e.target.value)}
+                        >
+                            <option value="All Classes">All Classes</option>
+                            {classes.map(cls => (
+                                <option key={cls._id} value={cls.name}>{cls.name}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </header>
 
+            <div className="analytics-stats-row slide-up stagger-1">
+                <div className="stat-card glass scale-in stagger-1">
+                    <div className="stat-icon"><Users size={20} /></div>
+                    <div className="stat-brief">
+                        <span className="label">Total Students</span>
+                        <span className="value">{students.length}</span>
+                    </div>
+                </div>
+                <div className="stat-card glass scale-in stagger-2">
+                    <div className="stat-icon"><TrendingUp size={20} /></div>
+                    <div className="stat-brief">
+                        <span className="label">Avg Attendance</span>
+                        <span className="value">{stats?.averageAttendancePercentage ? `${stats.averageAttendancePercentage.toFixed(0)}%` : 'N/A'}</span>
+                    </div>
+                </div>
+                <div className="stat-card glass scale-in stagger-3">
+                    <div className="stat-icon"><AlertCircle size={20} /></div>
+                    <div className="stat-brief">
+                        <span className="label">Low Attendance</span>
+                        <span className="value">{stats?.lowAttendanceCount || 0}</span>
+                    </div>
+                </div>
+            </div>
+
             <div className="analytics-grid">
-                <div className="chart-card glass large">
+                <div className="chart-card glass main-chart">
                     <div className="card-header">
-                        <h3>Weekly Attendance Trend</h3>
-                        <TrendingUp size={18} className="icon-trend" />
+                        <div className="header-info">
+                            <TrendingUp size={18} />
+                            <h3>Weekly Attendance Trend</h3>
+                        </div>
+                        <span className="badge">Activity</span>
                     </div>
                     <div className="chart-container">
-                        <ResponsiveContainer width="100%" height={300}>
+                        <ResponsiveContainer width="100%" height={320}>
                             <AreaChart data={stats?.weeklyTrend || []}>
                                 <defs>
                                     <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#5F7161" stopOpacity={0.15}/>
-                                        <stop offset="95%" stopColor="#5F7161" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="#4B6B50" stopOpacity={0.15}/>
+                                        <stop offset="95%" stopColor="#4B6B50" stopOpacity={0}/>
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(95, 113, 97, 0.1)" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#5F7161aa', fontSize: 12}} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#5F7161aa', fontSize: 12}} />
-                                <Tooltip 
-                                    contentStyle={{ background: '#ffffff', borderRadius: '12px', border: '1px solid rgba(109, 139, 116, 0.2)', boxShadow: '0 10px 15px -3px rgba(95, 113, 97, 0.1)' }}
-                                    itemStyle={{ color: '#5F7161' }}
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(75, 107, 80, 0.1)" />
+                                <XAxis
+                                    dataKey="name"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{fill: CHART_TEXT_COLOR, fontSize: 11, fontWeight: 600}}
+                                    dy={10}
                                 />
-                                <Area type="monotone" dataKey="present" stroke="#5F7161" strokeWidth={3} fillOpacity={1} fill="url(#colorPresent)" />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{fill: CHART_TEXT_COLOR, fontSize: 11, fontWeight: 600}}
+                                />
+                                <Tooltip
+                                    contentStyle={{ background: '#ffffff', borderRadius: '12px', border: '1px solid rgba(75, 107, 80, 0.2)', boxShadow: 'var(--shadow-lg)', fontSize: '12px' }}
+                                    cursor={{ stroke: '#4B6B50', strokeWidth: 1, strokeDasharray: '4 4' }}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="present"
+                                    stroke="#4B6B50"
+                                    strokeWidth={3}
+                                    fillOpacity={1}
+                                    fill="url(#colorPresent)"
+                                    animationDuration={1500}
+                                />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
-                <div className="side-stats">
-                    <div className="insight-card glass highlight">
-                        <div className="insight-icon alert">
-                            <AlertTriangle size={24} />
-                        </div>
-                        <div className="insight-content">
-                            <h4>Low Attendance Alert</h4>
-                            <p>{stats?.lowAttendanceCount || 0} students have below 75% attendance this month.</p>
-                            <button className="view-link" onClick={() => setShowLowAttendanceModal(true)}>View List</button>
-                        </div>
+                <div className="chart-wrapper glass scale-in stagger-2">
+                    <div className="chart-header">
+                        <h3>Attendance Trends</h3>
+                        <p>Weekly variation in student presence.</p>
                     </div>
-                    <div className="insight-card glass">
-                        <div className="insight-icon students">
-                            <Users size={24} />
-                        </div>
-                        <div className="insight-content">
-                            <h4>Total Enrollment</h4>
-                            <p>Current total of {stats?.totalStudents || 0} students across {stats?.totalClasses || 0} classes.</p>
-                        </div>
+                    <div className="chart-placeholder">
+                        <LineChart size={48} />
+                        <p>Timeline Visualization Active</p>
                     </div>
                 </div>
 
-                <div className="chart-card glass">
-                    <h3>Status Distribution</h3>
-                    <div className="chart-container">
-                        <ResponsiveContainer width="100%" height={250}>
+                <div className="chart-wrapper glass scale-in stagger-3">
+                    <div className="chart-header">
+                        <h3>Class Comparison</h3>
+                        <p>Performance across different sections.</p>
+                    </div>
+                    <div className="chart-placeholder">
+                        <PieChart size={48} />
+                        <p>Comparative Data Analysis</p>
+                    </div>
+                </div>
+
+                <div className="chart-card glass bottom-chart">
+                    <div className="card-header">
+                        <div className="header-info">
+                            <PieChartIcon size={18} />
+                            <h3>Status Breakdown</h3>
+                        </div>
+                    </div>
+                    <div className="chart-container centered">
+                        <ResponsiveContainer width="100%" height={260}>
                             <PieChart>
                                 <Pie
                                     data={stats?.statusDistribution || [
@@ -128,213 +178,195 @@ const Analytics = () => {
                                         { name: 'Late', value: 0 }
                                     ]}
                                     innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={5}
+                                    outerRadius={85}
+                                    paddingAngle={8}
                                     dataKey="value"
+                                    animationDuration={1500}
                                 >
                                     {COLORS.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="rgba(255,255,255,0.5)" strokeWidth={2} />
                                     ))}
                                 </Pie>
-                                <Tooltip />
+                                <Tooltip
+                                    contentStyle={{ background: '#ffffff', borderRadius: '12px', border: '1px solid rgba(75, 107, 80, 0.2)', boxShadow: 'var(--shadow-lg)' }}
+                                />
+                                <Legend
+                                    verticalAlign="bottom"
+                                    height={36}
+                                    iconType="circle"
+                                    formatter={(value) => <span style={{ color: '#1A2B1C', fontWeight: 600, fontSize: '11px' }}>{value}</span>}
+                                />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
-                <div className="chart-card glass">
-                    <h3>Enrollment by Class</h3>
+                <div className="chart-card glass bottom-chart">
+                    <div className="card-header">
+                        <div className="header-info">
+                            <BarChart3 size={18} />
+                            <h3>Enrollment Density</h3>
+                        </div>
+                    </div>
                     <div className="chart-container">
-                        <ResponsiveContainer width="100%" height={250}>
-                            <BarChart data={stats?.classDistribution || []}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(95, 113, 97, 0.1)" />
-                                <XAxis dataKey="class" axisLine={false} tickLine={false} tick={{fill: '#5F7161aa'}} />
-                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#5F7161aa'}} />
-                                <Tooltip 
-                                    contentStyle={{ background: '#ffffff', borderRadius: '12px', border: '1px solid rgba(109, 139, 116, 0.2)' }}
+                        <ResponsiveContainer width="100%" height={260}>
+                            <BarChart data={stats?.classDistribution || []} margin={{ top: 20, right: 20, left: 0, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(75, 107, 80, 0.1)" />
+                                <XAxis
+                                    dataKey="class"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{fill: CHART_TEXT_COLOR, fontSize: 11, fontWeight: 600}}
+                                    dy={10}
                                 />
-                                <Bar dataKey="count" fill="#5F7161" radius={[4, 4, 0, 0]} />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{fill: CHART_TEXT_COLOR, fontSize: 11, fontWeight: 600}}
+                                />
+                                <Tooltip
+                                    cursor={{fill: 'rgba(75, 107, 80, 0.05)'}}
+                                    contentStyle={{ background: '#ffffff', borderRadius: '12px', border: '1px solid rgba(75, 107, 80, 0.2)' }}
+                                />
+                                <Bar
+                                    dataKey="count"
+                                    fill="#4B6B50"
+                                    radius={[6, 6, 0, 0]}
+                                    barSize={32}
+                                    animationDuration={1500}
+                                />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
             </div>
 
+            <div className="report-footer-actions slide-up stagger-4">
+                <button className="report-btn primary" onClick={() => setShowLowAttendanceModal(true)}>
+                    <AlertTriangle size={18} />
+                    <span>Low Attendance Details</span>
+                </button>
+                <button className="report-btn secondary">
+                    <Download size={18} />
+                    <span>Generate Full Report</span>
+                </button>
+            </div>
+
             {showLowAttendanceModal && (
-                <div className="modal-overlay" onClick={() => setShowLowAttendanceModal(false)}>
-                    <div className="modal-content glass" onClick={e => e.stopPropagation()}>
+                <div className="modal-overlay fade-in">
+                    <div className="modal-card glass scale-in large">
                         <div className="modal-header">
-                            <h2>Low Attendance Students</h2>
-                            <p>Students with attendance below 75%</p>
+                            <div>
+                                <h2>Low Attendance Warning</h2>
+                                <p>Students with engagement levels below 75% threshold.</p>
+                            </div>
+                            <button className="close-x" onClick={() => setShowLowAttendanceModal(false)}>×</button>
                         </div>
-                        <div className="low-attendance-list custom-scrollbar">
-                            {stats?.lowAttendanceList?.length > 0 ? (
-                                <table>
+                        <div className="modal-body custom-scrollbar">
+                            <div className="table-responsive small">
+                                <table className="custom-table">
                                     <thead>
                                         <tr>
-                                            <th>Roll No</th>
-                                            <th>Name</th>
-                                            <th>Attendance</th>
+                                            <th>Student Identity</th>
+                                            <th className="text-right">Attendance Rate</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {stats.lowAttendanceList.map((st, idx) => (
-                                            <tr key={idx}>
-                                                <td>{st.rollNo}</td>
-                                                <td>{st.name}</td>
-                                                <td className="st-percent">{st.percentage}%</td>
+                                        {stats?.lowAttendanceList?.length > 0 ? (
+                                            stats.lowAttendanceList.map((st, idx) => (
+                                                <tr key={idx}>
+                                                    <td>
+                                                        <div className="st-info-mini">
+                                                            <span className="roll-tag">{st.rollNo}</span>
+                                                            <span className="name-bold">{st.name}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="text-right">
+                                                        <span className="rate-value danger">{st.percentage}%</span>
+                                                        <div className="mini-progress-track">
+                                                            <div className="mini-progress-fill" style={{ width: `${st.percentage}%` }}></div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="2" className="empty-row">No students currently in warning zone.</td>
                                             </tr>
-                                        ))}
+                                        )}
                                     </tbody>
                                 </table>
-                            ) : (
-                                <p className="empty-modal">No students found with low attendance.</p>
-                            )}
+                            </div>
                         </div>
-                        <div className="modal-actions">
-                            <button className="save-btn" onClick={() => setShowLowAttendanceModal(false)}>Close</button>
+                        <div className="modal-footer">
+                            <button className="action-btn primary" onClick={() => setShowLowAttendanceModal(false)}>Acknowledge</button>
                         </div>
                     </div>
                 </div>
             )}
 
             <style>{`
-                .analytics {
-                    display: flex;
-                    flex-direction: column;
+                .analytics { display: flex; flex-direction: column; gap: 1.75rem; }
+                .selector-wrapper { padding: 2px 4px; border-radius: var(--radius-md); }
+                .class-selector {
+                    padding: 0.6rem 1rem; border: none; background: transparent;
+                    color: var(--text-main); font-weight: 600; font-size: 0.875rem; outline: none;
+                    cursor: pointer; min-width: 150px;
+                }
+
+                .analytics-stats-row {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
                     gap: 1.5rem;
                 }
-                .page-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-                .header-actions {
-                    display: flex;
-                    align-items: center;
-                    gap: 1rem;
-                }
-                .class-selector {
-                    padding: 0.75rem 1.25rem;
-                    border-radius: 12px;
-                    border: 1.5px solid var(--border);
-                    background: var(--bg-card);
-                    color: var(--text-main);
-                    font-weight: 500;
-                    outline: none;
-                    cursor: pointer;
-                    min-width: 155px;
-                }
-                .low-attendance-list {
-                    max-height: 400px;
-                    overflow-y: auto;
-                    margin: 1.5rem 0;
-                }
-                .low-attendance-list table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                .low-attendance-list th {
-                    text-align: left;
-                    padding: 0.75rem;
-                    border-bottom: 1px solid var(--border);
-                    color: var(--secondary);
-                    font-size: 0.85rem;
-                }
-                .low-attendance-list td {
-                    padding: 0.75rem;
-                    border-bottom: 1px solid var(--border);
-                    font-size: 0.95rem;
-                }
-                .st-percent {
-                    color: var(--danger);
-                    font-weight: 700;
-                }
-                .empty-modal {
-                    text-align: center;
-                    padding: 2rem;
-                    color: var(--secondary);
-                }
-                .modal-header { margin-bottom: 1rem; }
-                .modal-header h2 { margin-bottom: 4px; }
-                .modal-header p { color: var(--secondary); font-size: 0.9rem; }
+
                 .analytics-grid {
                     display: grid;
                     grid-template-columns: 2fr 1fr;
-                    grid-template-rows: auto auto;
                     gap: 1.5rem;
                 }
-                .chart-card {
-                    padding: 1.5rem;
-                    border-radius: 24px;
+                .chart-card { padding: 1.75rem; border-radius: var(--radius-xl); display: flex; flex-direction: column; }
+                .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; }
+                .header-info { display: flex; align-items: center; gap: 10px; color: var(--text-main); font-weight: 700; }
+                .header-info h3 { font-size: 1.1rem; }
+
+                .main-chart { grid-row: span 1; }
+
+                .stat-card {
+                    flex: 1; display: flex; align-items: center; gap: 1rem;
+                    padding: 1.25rem 1.5rem; border-radius: var(--radius-lg);
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 }
-                .chart-card.large {
-                    grid-column: span 1;
+                .stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+                .stat-icon {
+                    width: 44px; height: 44px; background: rgba(75, 107, 80, 0.1);
+                    color: var(--primary); border-radius: 12px;
+                    display: flex; align-items: center; justify-content: center;
+                    margin-top: 12px; background: transparent; color: var(--primary);
+                    font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 4px;
                 }
-                .card-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 1.5rem;
+                .text-action-btn:hover { text-decoration: underline; }
+
+                .bottom-chart { grid-column: span 1; }
+                .chart-container.centered { display: flex; align-items: center; justify-content: center; flex: 1; }
+
+                .badge {
+                    padding: 4px 10px; background: var(--bg-subtle); color: var(--primary);
+                    font-size: 0.65rem; font-weight: 800; border-radius: 20px; text-transform: uppercase;
                 }
-                .chart-card h3 {
-                    font-size: 1.1rem;
-                    margin-bottom: 1rem;
-                }
-                .chart-container {
-                    width: 100%;
-                }
-                .side-stats {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 1.5rem;
-                }
-                .insight-card {
-                    padding: 1.5rem;
-                    border-radius: 20px;
-                    display: flex;
-                    gap: 1rem;
-                }
-                .insight-card.highlight {
-                    border-left: 4px solid var(--danger);
-                }
-                .insight-icon {
-                    width: 48px;
-                    height: 48px;
-                    border-radius: 12px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .insight-icon.alert { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-                .insight-icon.students { background: rgba(109, 139, 116, 0.05); color: var(--primary); }
-                .insight-content h4 { font-size: 0.95rem; margin-bottom: 4px; }
-                .insight-content p { font-size: 0.85rem; color: var(--secondary); }
-                .view-link {
-                    background: transparent;
-                    color: var(--primary);
-                    font-size: 0.85rem;
-                    font-weight: 600;
-                    margin-top: 8px;
-                    padding: 0;
-                }
+
+                .st-info-mini { display: flex; align-items: center; gap: 12px; }
+                .roll-tag { font-size: 0.75rem; font-weight: 700; color: var(--primary); background: var(--bg-subtle); padding: 2px 8px; border-radius: 4px; }
+                .name-bold { font-weight: 600; color: var(--text-main); font-size: 0.9rem; }
+                .rate-value.danger { color: var(--danger); font-weight: 800; font-size: 0.95rem; }
+                
+                .mini-progress-track { width: 100%; height: 4px; background: var(--bg-subtle); border-radius: 4px; margin-top: 6px; overflow: hidden; }
+                .mini-progress-fill { height: 100%; background: var(--danger); border-radius: 4px; }
+                .empty-row { padding: 3rem; text-align: center; color: var(--text-muted); font-style: italic; }
+
                 @media (max-width: 1024px) {
-                    .analytics-grid {
-                        grid-template-columns: 1fr;
-                    }
-                }
-                @media (max-width: 768px) {
-                    .page-header {
-                        flex-direction: column;
-                        align-items: flex-start;
-                        gap: 1rem;
-                    }
-                    .header-actions {
-                        width: 100%;
-                    }
-                    .class-selector {
-                        width: 100%;
-                    }
+                    .analytics-grid { grid-template-columns: 1fr; }
+                    .bottom-chart { grid-column: auto; }
                 }
             `}</style>
         </div>

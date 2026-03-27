@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
-import { Mail, Lock, User, GraduationCap, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, User, GraduationCap, ArrowRight, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
 
 const Register = () => {
     const [name, setName] = useState('');
@@ -12,14 +12,14 @@ const Register = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+    const hasLength = password.length >= 8;
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
-
-        // Validation: At least one uppercase letter and one special character
-        const hasUppercase = /[A-Z]/.test(password);
-        const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
 
         if (!hasUppercase || !hasSpecial) {
             setError('Password must contain at least one uppercase letter and one special character.');
@@ -39,212 +39,213 @@ const Register = () => {
         }
     };
 
+    const StrengthItem = ({ label, met }) => (
+        <div className={`strength-item ${met ? 'met' : ''}`}>
+            {met ? <CheckCircle size={13} /> : <XCircle size={13} />}
+            <span>{label}</span>
+        </div>
+    );
+
     return (
-        <div className="login-container">
-            <div className="login-card glass">
-                <div className="login-header">
-                    <div className="logo-box">
-                        <GraduationCap size={40} />
+        <div className="auth-page">
+            <div className="auth-card glass">
+                <div className="auth-logo">
+                    <div className="logo-icon-box">
+                        <GraduationCap size={28} />
                     </div>
-                    <h1>Create Account</h1>
-                    <p>Join the Smart Attendance Portal</p>
+                    <div>
+                        <h1>Create Account</h1>
+                        <p>Join the SmartAttend portal</p>
+                    </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="login-form">
-                    {error && <div className="error-msg">{error}</div>}
-                    
-                    <div className="input-group">
-                        <label>Full Name</label>
-                        <div className="input-wrapper">
-                            <User className="input-icon" size={20} />
-                            <input 
-                                type="text" 
+                <form onSubmit={handleSubmit} className="auth-form">
+                    {error && (
+                        <div className="auth-error">
+                            <span>⚠</span> {error}
+                        </div>
+                    )}
+
+                    <div className="field-group">
+                        <label htmlFor="reg-name">Full Name</label>
+                        <div className="field-input-wrap">
+                            <User className="field-icon" size={17} />
+                            <input
+                                id="reg-name"
+                                type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                placeholder="Your Name"
-                                required 
+                                placeholder="Your full name"
+                                required
+                                autoComplete="name"
                             />
                         </div>
                     </div>
 
-                    <div className="input-group">
-                        <label>Email Address</label>
-                        <div className="input-wrapper">
-                            <Mail className="input-icon" size={20} />
-                            <input 
-                                type="email" 
+                    <div className="field-group">
+                        <label htmlFor="reg-email">Email Address</label>
+                        <div className="field-input-wrap">
+                            <Mail className="field-icon" size={17} />
+                            <input
+                                id="reg-email"
+                                type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="name@school.com"
-                                required 
+                                placeholder="admin@school.com"
+                                required
+                                autoComplete="email"
                             />
                         </div>
                     </div>
 
-                    <div className="input-group">
-                        <label>Password</label>
-                        <div className="input-wrapper">
-                            <Lock className="input-icon" size={20} />
-                            <input 
-                                type={showPassword ? "text" : "password"} 
+                    <div className="field-group">
+                        <label htmlFor="reg-password">Password</label>
+                        <div className="field-input-wrap">
+                            <Lock className="field-icon" size={17} />
+                            <input
+                                id="reg-password"
+                                type={showPassword ? 'text' : 'password'}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                placeholder="••••••••"
-                                required 
+                                placeholder="Create a strong password"
+                                required
+                                autoComplete="new-password"
                             />
-                            <button 
-                                type="button" 
-                                className="password-toggle" 
+                            <button
+                                type="button"
+                                className="eye-toggle"
                                 onClick={() => setShowPassword(!showPassword)}
                                 tabIndex="-1"
                             >
-                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                             </button>
                         </div>
-                        <p className="hintText">Must contain 1 uppercase & 1 special character.</p>
+                        {password.length > 0 && (
+                            <div className="strength-checklist">
+                                <StrengthItem label="At least 8 characters" met={hasLength} />
+                                <StrengthItem label="One uppercase letter (A–Z)" met={hasUppercase} />
+                                <StrengthItem label="One special character (!@#$...)" met={hasSpecial} />
+                            </div>
+                        )}
                     </div>
 
-                    <button type="submit" className="login-btn" disabled={loading}>
-                        {loading ? 'Creating...' : 'Create Account'}
-                        <ArrowRight size={20} />
+                    <button type="submit" className="auth-submit-btn" disabled={loading}>
+                        {loading ? 'Creating account...' : 'Create Account'}
+                        {!loading && <ArrowRight size={18} />}
                     </button>
-                    
-                    <div className="auth-footer">
-                        <p>Already have an account? <Link to="/login">Sign In</Link></p>
-                    </div>
+
+                    <p className="auth-switch">
+                        Already have an account?&nbsp;
+                        <Link to="/login">Sign In</Link>
+                    </p>
                 </form>
             </div>
 
             <style>{`
-                .login-container {
-                    height: 100vh;
+                .auth-page {
+                    min-height: 100vh;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     background: var(--bg-main);
-                    padding: 2rem;
+                    padding: 2rem 1rem;
                 }
-                .login-card {
+                .auth-card {
                     width: 100%;
-                    max-width: 450px;
-                    padding: 2.5rem 3rem;
-                    border-radius: 24px;
-                    color: var(--text-main);
+                    max-width: 420px;
+                    padding: 2.5rem;
+                    border-radius: var(--radius-xl);
                 }
-                .login-header {
-                    text-align: center;
+                .auth-logo {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
                     margin-bottom: 2rem;
+                    padding-bottom: 1.5rem;
+                    border-bottom: 1px solid var(--border);
                 }
-                .logo-box {
-                    width: 60px;
-                    height: 60px;
+                .logo-icon-box {
+                    width: 50px;
+                    height: 50px;
+                    flex-shrink: 0;
                     background: var(--primary);
                     color: white;
-                    border-radius: 18px;
+                    border-radius: var(--radius-md);
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    margin: 0 auto 1rem;
-                    box-shadow: 0 10px 15px -3px rgba(109, 139, 116, 0.2);
+                    box-shadow: 0 6px 16px rgba(75, 107, 80, 0.25);
                 }
-                .login-header h1 {
-                    font-size: 1.75rem;
-                    margin-bottom: 0.25rem;
+                .auth-logo h1 {
+                    font-size: 1.375rem;
+                    margin-bottom: 2px;
+                    color: var(--text-main);
                 }
-                .login-header p {
-                    color: var(--secondary);
+                .auth-logo p { font-size: 0.82rem; color: var(--text-muted); }
+                .auth-form { display: flex; flex-direction: column; gap: 1.25rem; }
+                .auth-error {
+                    background: var(--danger-bg);
+                    color: var(--danger);
+                    padding: 0.75rem 1rem;
+                    border-radius: var(--radius-sm);
+                    font-size: 0.875rem;
+                    border: 1px solid rgba(185, 28, 28, 0.15);
+                    display: flex; gap: 8px; align-items: flex-start;
                 }
-                .login-form {
+                .field-group { display: flex; flex-direction: column; gap: 0.4rem; }
+                .field-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-main); }
+                .field-input-wrap { position: relative; display: flex; align-items: center; }
+                .field-icon { position: absolute; left: 0.9rem; color: var(--text-muted); pointer-events: none; }
+                .field-input-wrap input {
+                    width: 100%;
+                    padding: 0.8rem 2.8rem 0.8rem 2.6rem;
+                    border: 1.5px solid var(--border);
+                    border-radius: var(--radius-md);
+                    font-size: 0.9rem;
+                    background: white;
+                    color: var(--text-main);
+                    font-family: inherit;
+                    transition: all 0.2s;
+                }
+                .field-input-wrap input::placeholder { color: var(--text-muted); opacity: 0.7; }
+                .field-input-wrap input:focus {
+                    outline: none;
+                    border-color: var(--primary);
+                    box-shadow: 0 0 0 3px rgba(75, 107, 80, 0.1);
+                }
+                .eye-toggle {
+                    position: absolute; right: 0.9rem;
+                    background: transparent; color: var(--text-muted);
+                    padding: 4px; display: flex; border-radius: 4px;
+                }
+                .eye-toggle:hover { color: var(--primary); }
+                .strength-checklist {
                     display: flex;
                     flex-direction: column;
-                    gap: 1.25rem;
+                    gap: 4px;
+                    padding: 0.6rem 0.875rem;
+                    background: var(--bg-subtle);
+                    border-radius: var(--radius-sm);
+                    border: 1px solid var(--border);
+                    margin-top: 4px;
                 }
-                .input-group label {
-                    display: block;
-                    font-size: 0.85rem;
-                    font-weight: 500;
-                    margin-bottom: 0.4rem;
-                }
-                .input-wrapper {
-                    position: relative;
+                .strength-item {
                     display: flex;
                     align-items: center;
-                }
-                .input-icon {
-                    position: absolute;
-                    left: 1rem;
-                    color: var(--secondary);
-                }
-                .input-wrapper input {
-                    width: 100%;
-                    padding: 0.875rem 1rem 0.875rem 3rem;
-                    border: 1.5px solid var(--border);
-                    border-radius: 12px;
-                    font-size: 1rem;
-                    transition: all 0.2s;
-                    background: #ffffff;
-                    color: var(--text-main);
-                }
-                .input-wrapper input:focus {
-                    border-color: var(--primary);
-                    box-shadow: 0 0 0 4px rgba(109, 139, 116, 0.1);
-                }
-                .password-toggle {
-                    position: absolute;
-                    right: 1rem;
-                    background: transparent;
-                    color: var(--secondary);
-                    padding: 4px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: color 0.2s;
-                }
-                .password-toggle:hover {
-                    color: var(--primary);
-                }
-                .hintText {
-                    font-size: 0.75rem;
-                    color: var(--secondary);
-                    margin-top: 0.25rem;
-                    opacity: 0.8;
-                }
-                .login-btn {
-                    background: var(--primary);
-                    color: white;
-                    padding: 0.875rem;
-                    border-radius: 12px;
-                    font-weight: 600;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 10px;
-                    margin-top: 0.5rem;
-                    transition: all 0.2s;
-                }
-                .login-btn:hover:not(:disabled) {
-                    background: var(--primary-hover);
-                    transform: translateY(-1px);
-                }
-                .login-btn:disabled { opacity: 0.7; }
-                .error-msg {
-                    background: rgba(239, 68, 68, 0.1);
+                    gap: 6px;
+                    font-size: 0.78rem;
                     color: var(--danger);
-                    padding: 0.75rem;
-                    border-radius: 8px;
-                    font-size: 0.85rem;
-                    border: 1px solid rgba(239, 68, 68, 0.2);
-                }
-                .auth-footer {
-                    text-align: center;
-                    margin-top: 0.5rem;
-                    font-size: 0.9rem;
-                    color: var(--secondary);
-                }
-                .auth-footer a {
-                    color: var(--primary);
                     font-weight: 600;
                 }
+                .strength-item.met { color: var(--success); }
+                .auth-submit-btn {
+                    margin-top: 0.25rem;
+                    width: 100%;
+                }
+                .auth-submit-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+                .auth-switch { text-align: center; font-size: 0.875rem; color: var(--text-muted); }
+                .auth-switch a { color: var(--primary); font-weight: 600; }
+                .auth-switch a:hover { text-decoration: underline; }
             `}</style>
         </div>
     );

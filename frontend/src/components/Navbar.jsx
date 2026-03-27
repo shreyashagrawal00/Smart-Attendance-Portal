@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Bell, User, Menu } from 'lucide-react';
+import { Search, User, Menu } from 'lucide-react';
 
 const Navbar = ({ toggleSidebar }) => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
@@ -7,133 +7,142 @@ const Navbar = ({ toggleSidebar }) => {
     return (
         <header className="navbar glass">
             <div className="navbar-left">
-                <button className="mobile-menu-btn" onClick={toggleSidebar}>
-                    <Menu size={24} />
+                <button className="mobile-menu-btn" onClick={toggleSidebar} id="mobile-menu-toggle">
+                    <Menu size={22} />
                 </button>
                 <div className="search-bar">
-                    <Search size={18} className="search-icon" />
+                    <Search size={16} className="search-icon" />
                     <input type="text" placeholder="Search students, classes..." />
                 </div>
             </div>
-            <div className="nav-actions">
-                <button className="icon-btn">
-                    <Bell size={20} />
-                </button>
-                <div className="user-profile">
-                    <div className="user-info">
-                        <span className="user-name">{userInfo?.name || 'Admin'}</span>
-                        <span className="user-role">{userInfo?.isAdmin ? 'Teacher' : 'Staff'}</span>
-                    </div>
-                    <div className="avatar">
-                        <User size={20} />
+                <div className="nav-actions slide-up stagger-1">
+                    <div className="divider"></div>
+                    <div className="user-profile">
+                        <div className="user-info">
+                            <span className="user-name">{userInfo?.name || 'Admin'}</span>
+                            <span className="user-role">{userInfo?.isAdmin ? 'Administrator' : 'Staff'}</span>
+                        </div>
+                        <div className="avatar">
+                            <User size={18} />
+                        </div>
                     </div>
                 </div>
-            </div>
+
             <style>{`
                 .navbar {
-                    height: 70px;
+                    height: var(--navbar-height);
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    padding: 0 2rem;
+                    padding: 0 1.5rem;
                     position: sticky;
-                    top: 0;
+                    top: 1rem;
+                    margin: 1rem 1.5rem 1.5rem calc(var(--sidebar-width) + 2.5rem);
                     z-index: 900;
-                    border-bottom: 1px solid var(--border);
+                    border-radius: var(--radius-lg);
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 }
                 .navbar-left {
                     display: flex;
                     align-items: center;
-                    gap: 1rem;
+                    gap: 0.875rem;
                     flex: 1;
                 }
                 .mobile-menu-btn {
                     display: none;
                     background: transparent;
                     color: var(--text-main);
-                    padding: 8px;
-                    border-radius: 8px;
+                    padding: 6px;
+                    border-radius: var(--radius-sm);
                 }
+                .mobile-menu-btn:hover { background: var(--bg-subtle); }
                 .search-bar {
                     display: flex;
                     align-items: center;
-                    background: rgba(109, 139, 116, 0.05);
-                    padding: 0.5rem 1rem;
-                    border-radius: 10px;
+                    background: rgba(255, 255, 255, 0.5);
+                    border: 1px solid var(--border);
+                    padding: 0.6rem 1.15rem;
+                    border-radius: var(--radius-md);
                     width: 100%;
-                    max-width: 300px;
-                    gap: 10px;
+                    max-width: 320px;
+                    gap: 12px;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                .search-bar:focus-within {
+                    border-color: var(--primary);
+                    background: white;
+                    box-shadow: 0 0 0 3px rgba(75, 107, 80, 0.08);
                 }
                 .search-bar input {
                     background: transparent;
                     border: none;
                     outline: none;
                     width: 100%;
-                    font-size: 0.9rem;
+                    font-size: 0.875rem;
+                    color: var(--text-main);
                 }
-                .search-icon {
-                    color: var(--secondary);
-                }
+                .search-bar input::placeholder { color: var(--text-muted); }
+                .search-icon { color: var(--text-muted); flex-shrink: 0; }
                 .nav-actions {
                     display: flex;
                     align-items: center;
-                    gap: 1.5rem;
+                    gap: 0.875rem;
                 }
-                .icon-btn {
-                    background: transparent;
-                    color: var(--secondary);
-                    padding: 8px;
-                    border-radius: 8px;
-                    transition: all 0.2s;
+                .notif-btn {
+                    display: none;
                 }
-                .icon-btn:hover {
-                    background: rgba(109, 139, 116, 0.05);
-                    color: var(--primary);
+                .divider {
+                    width: 1px;
+                    height: 28px;
+                    background: var(--border);
                 }
                 .user-profile {
                     display: flex;
                     align-items: center;
-                    gap: 12px;
-                    padding-left: 1.5rem;
-                    border-left: 1px solid var(--border);
+                    gap: 10px;
+                    cursor: pointer;
+                    padding: 5px;
+                    border-radius: var(--radius-md);
+                    transition: background 0.2s;
                 }
+                .user-profile:hover { background: var(--bg-subtle); }
                 .user-info {
                     display: flex;
                     flex-direction: column;
                     text-align: right;
+                    gap: 1px;
                 }
                 .user-name {
                     font-weight: 600;
-                    font-size: 0.95rem;
+                    font-size: 0.875rem;
+                    color: var(--text-main);
                 }
                 .user-role {
-                    font-size: 0.75rem;
-                    color: var(--primary);
-                    opacity: 0.9;
+                    font-size: 0.7rem;
+                    color: var(--text-sub);
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.02em;
+                    opacity: 0.8;
                 }
                 .avatar {
-                    width: 38px;
-                    height: 38px;
+                    width: 36px;
+                    height: 36px;
                     background: var(--primary);
                     color: white;
-                    border-radius: 10px;
+                    border-radius: var(--radius-sm);
                     display: flex;
                     align-items: center;
                     justify-content: center;
                 }
+                @media (max-width: 1024px) {
+                    .navbar { margin-left: 1.5rem; width: auto; }
+                }
                 @media (max-width: 768px) {
-                    .mobile-menu-btn {
-                        display: flex;
-                    }
-                    .search-bar {
-                        display: none; /* Hide full search bar on very small screens to save space */
-                    }
-                    .user-info {
-                        display: none; /* Hide name/role text on mobile, just show avatar */
-                    }
-                    .navbar {
-                        padding: 0 1rem;
-                    }
+                    .mobile-menu-btn { display: flex; }
+                    .search-bar { display: none; }
+                    .user-info { display: none; }
+                    .navbar { padding: 0 1rem; margin: 0.75rem 1rem 1rem; }
                 }
             `}</style>
         </header>

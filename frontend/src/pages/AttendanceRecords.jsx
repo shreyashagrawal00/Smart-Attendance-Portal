@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { Calendar, Filter, Download, User, Search, ChevronRight, History } from 'lucide-react';
+import { Calendar, Filter, Download, User, Search, ChevronRight, History, FileText, XCircle } from 'lucide-react';
 
 const AttendanceRecords = () => {
     const [records, setRecords] = useState([]);
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [selectedClass, setSelectedClass] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const [classes, setClasses] = useState([]);
 
@@ -38,15 +39,6 @@ const AttendanceRecords = () => {
         }
     };
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'Present': return 'var(--success)';
-            case 'Absent': return 'var(--danger)';
-            case 'Late': return 'var(--warning)';
-            default: return 'var(--secondary)';
-        }
-    };
-
     const handleExportCSV = () => {
         if (records.length === 0) return alert('No records to export');
         
@@ -73,77 +65,109 @@ const AttendanceRecords = () => {
         document.body.removeChild(a);
     };
 
+    const filteredRecords = records.filter(r => 
+        r.student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.student.rollNo.includes(searchTerm)
+    );
+
     return (
-        <div className="attendance-records">
+        <div className="attendance-records fade-in">
             <header className="page-header">
-                <div>
-                    <h1>Attendance History</h1>
-                    <p>Review and filter past attendance records.</p>
+                <div className="header-title">
+                    <h1>Attendance Records</h1>
+                    <p>Access historical logs and export detailed reports.</p>
                 </div>
-                <button className="export-btn" onClick={handleExportCSV}>
+                <button className="action-btn secondary" onClick={handleExportCSV} disabled={records.length === 0}>
                     <Download size={18} />
-                    <span>Export CSV</span>
+                    <span>Download CSV</span>
                 </button>
             </header>
 
-            <div className="filter-bar glass">
-                <div className="filter-group">
-                    <label><Calendar size={16} /> Date</label>
-                    <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-                </div>
-                <div className="filter-group">
-                    <label><Filter size={16} /> Class</label>
-                    <select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)}>
-                        <option value="">All Classes</option>
-                        {classes.map(c => <option key={c._id || c} value={c.name || c}>{c.name || c}</option>)}
-                    </select>
-                </div>
-                <div className="search-mini">
-                    <Search size={16} />
-                    <input type="text" placeholder="Search student..." />
+            <div className="controls-stack">
+                <div className="filter-toolbar glass slide-up stagger-1">
+                    <div className="tool-group">
+                        <label><Calendar size={14} /> Log Date</label>
+                        <input 
+                            type="date" 
+                            className="tool-input" 
+                            value={date} 
+                            onChange={(e) => setDate(e.target.value)} 
+                        />
+                    </div>
+                    <div className="tool-divider"></div>
+                    <div className="tool-group">
+                        <label><Filter size={14} /> Class Group</label>
+                        <select 
+                            className="tool-select" 
+                            value={selectedClass} 
+                            onChange={(e) => setSelectedClass(e.target.value)}
+                        >
+                            <option value="">All Classes</option>
+                            {classes.map(c => <option key={c._id || c} value={c.name || c}>{c.name || c}</option>)}
+                        </select>
+                    </div>
+                    <div className="tool-spacer"></div>
+                    <div className="tool-search">
+                        <Search size={16} />
+                        <input 
+                            type="text" 
+                            placeholder="Find by name or roll..." 
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
                 </div>
             </div>
 
-            <div className="records-grid">
+            <div className="records-main">
                 {loading ? (
-                    <div className="loading">Fetching records...</div>
-                ) : records.length === 0 ? (
-                    <div className="empty-state glass">
-                        <History size={48} className="empty-icon" />
-                        <h3>No records found</h3>
-                        <p>Try changing the date or class filter.</p>
+                    <div className="loading-container">
+                        <div className="spinner"></div>
+                        <p>Syncing records...</p>
+                    </div>
+                ) : filteredRecords.length === 0 ? (
+                    <div className="empty-state-card glass">
+                        <div className="empty-icon-wrap">
+                            <History size={40} />
+                        </div>
+                        <h3>No logs found</h3>
+                        <p>Adjust your filters or check a different date to see available records.</p>
+                        {selectedClass || searchTerm ? (
+                            <button className="reset-link" onClick={() => { setSelectedClass(''); setSearchTerm(''); }}>Clear all filters</button>
+                        ) : null}
                     </div>
                 ) : (
-                    <div className="table-wrapper glass">
-                        <table className="records-table">
+                    <div className="table-responsive glass">
+                        <table className="custom-table">
                             <thead>
                                 <tr>
-                                    <th>Student</th>
+                                    <th>Student Entry</th>
                                     <th>Roll No</th>
-                                    <th>Class</th>
+                                    <th>Class Section</th>
                                     <th>Status</th>
-                                    <th>Action</th>
+                                    <th className="text-right">Activity</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {records.map(record => (
-                                    <tr key={record._id}>
+                                 {filteredRecords.map((record, index) => (
+                                    <tr key={record._id} className={`slide-up stagger-${(index % 10) + 1}`}>
                                         <td>
-                                            <div className="st-cell">
-                                                <div className="avatar-mini">{record.student.name.charAt(0)}</div>
-                                                <span>{record.student.name}</span>
+                                            <div className="student-profile-cell">
+                                                <div className="mini-avatar">{record.student.name.charAt(0)}</div>
+                                                <span className="profile-name">{record.student.name}</span>
                                             </div>
                                         </td>
-                                        <td>{record.student.rollNo}</td>
-                                        <td>{record.student.class}</td>
+                                        <td><span className="badge-outline">{record.student.rollNo}</span></td>
+                                        <td><span className="class-label">{record.student.class}</span></td>
                                         <td>
-                                            <span className={`status-badge ${record.status.toLowerCase()}`}>
-                                                {record.status}
-                                            </span>
+                                            <div className={`status-indicator ${record.status.toLowerCase()}`}>
+                                                <div className="indicator-dot"></div>
+                                                <span>{record.status}</span>
+                                            </div>
                                         </td>
-                                        <td>
-                                            <button className="view-details">
-                                                <span>Details</span>
+                                        <td className="text-right">
+                                            <button className="row-action-btn">
+                                                <span>View Log</span>
                                                 <ChevronRight size={14} />
                                             </button>
                                         </td>
@@ -159,176 +183,172 @@ const AttendanceRecords = () => {
                 .attendance-records {
                     display: flex;
                     flex-direction: column;
-                    gap: 1.5rem;
+                    gap: 1.75rem;
                 }
-                .page-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
-                .export-btn {
-                    background: var(--bg-card);
-                    color: var(--primary);
-                    border: 1px solid var(--border);
-                    padding: 0.75rem 1.25rem;
-                    border-radius: 12px;
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    font-weight: 600;
-                    transition: all 0.2s;
-                }
-                .export-btn:hover { background: rgba(109, 139, 116, 0.1); }
-                
-                .filter-bar {
-                    padding: 1.25rem;
-                    border-radius: 16px;
-                    display: flex;
-                    gap: 2rem;
-                    align-items: center;
-                }
-                .filter-group {
+                .controls-stack {
                     display: flex;
                     flex-direction: column;
-                    gap: 6px;
+                    gap: 1rem;
                 }
-                .filter-group label {
+                .filter-toolbar {
+                    display: flex;
+                    align-items: center;
+                    padding: 0.75rem 1.25rem;
+                    border-radius: var(--radius-lg);
+                    gap: 1.25rem;
+                }
+                .tool-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                }
+                .tool-group label {
                     display: flex;
                     align-items: center;
                     gap: 6px;
-                    font-size: 0.8rem;
-                    font-weight: 600;
-                    color: var(--secondary);
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    color: var(--text-sub);
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
                 }
-                .filter-group input, .filter-group select {
-                    padding: 0.5rem 0.75rem;
-                    border-radius: 8px;
-                    border: 1px solid var(--border);
-                    background: var(--bg-card);
+                .tool-input, .tool-select {
+                    background: transparent;
+                    border: none;
                     color: var(--text-main);
+                    font-weight: 600;
+                    font-size: 0.85rem;
                     outline: none;
+                    cursor: pointer;
                     font-family: inherit;
                 }
-                .search-mini {
-                    margin-left: auto;
+                .tool-divider {
+                    width: 1px;
+                    height: 32px;
+                    background: var(--border);
+                }
+                .tool-spacer { flex: 1; }
+                .tool-search {
                     display: flex;
                     align-items: center;
-                    gap: 8px;
-                    background: var(--bg-card);
+                    gap: 10px;
+                    background: var(--bg-subtle);
+                    padding: 0.5rem 1rem;
+                    border-radius: var(--radius-md);
                     border: 1px solid var(--border);
-                    padding: 0.6rem 1rem;
-                    border-radius: 10px;
-                    width: 240px;
+                    min-width: 260px;
+                    transition: all 0.2s;
                 }
-                .search-mini input {
+                .tool-search:focus-within {
+                    border-color: var(--primary);
+                    background: white;
+                    box-shadow: 0 0 0 3px rgba(75, 107, 80, 0.08);
+                }
+                .tool-search input {
                     background: transparent;
                     border: none;
                     outline: none;
                     width: 100%;
+                    font-size: 0.85rem;
+                    color: var(--text-main);
                 }
+                .tool-search input::placeholder { color: var(--text-muted); }
+
+                .table-responsive { border-radius: var(--radius-xl); overflow: hidden; }
+                .custom-table { width: 100%; border-collapse: collapse; }
+                .custom-table th {
+                    background: var(--bg-subtle); padding: 1rem 1.5rem;
+                    text-align: left; font-size: 0.75rem; font-weight: 800;
+                    color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.05em;
+                }
+                .custom-table td {
+                    padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
+                    vertical-align: middle;
+                }
+                .custom-table tr {
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                .custom-table tr:hover { 
+                    background: rgba(255, 255, 255, 0.5); 
+                    transform: scale(1.002);
+                }
+
+                .student-profile-cell { display: flex; align-items: center; gap: 12px; }
+                .mini-avatar {
+                    width: 32px; height: 32px; background: var(--primary);
+                    color: white; border-radius: 50%;
+                    display: flex; align-items: center; justify-content: center;
+                    font-weight: 700; font-size: 0.8rem;
+                }
+                .profile-name { font-weight: 600; color: var(--text-main); font-size: 0.9rem; }
                 
-                .table-wrapper {
-                    border-radius: 20px;
-                    overflow: hidden;
+                .badge-outline {
+                    padding: 3px 8px; border: 1.5px solid var(--border);
+                    border-radius: 6px; font-weight: 700; font-size: 0.75rem;
+                    color: var(--text-sub);
                 }
-                .records-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                .records-table th {
-                    background: rgba(109, 139, 116, 0.05);
-                    padding: 1rem 1.5rem;
-                    text-align: left;
-                    font-size: 0.85rem;
-                    color: var(--primary);
-                }
-                .records-table td {
-                    padding: 1rem 1.5rem;
-                    border-bottom: 1px solid var(--border);
-                }
-                .st-cell {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    font-weight: 600;
-                }
-                .avatar-mini {
-                    width: 32px;
-                    height: 32px;
-                    background: rgba(109, 139, 116, 0.1);
-                    color: var(--primary);
-                    border-radius: 8px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 0.85rem;
-                }
-                .status-badge {
-                    padding: 6px 14px;
-                    border-radius: 20px;
-                    font-size: 0.8rem;
-                    font-weight: 700;
-                    border: 1px solid transparent;
+                .class-label { font-size: 0.85rem; font-weight: 600; color: var(--text-sub); }
+
+                .status-indicator {
+                    display: inline-flex; align-items: center; gap: 8px;
+                    padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 0.75rem;
                     letter-spacing: 0.02em;
-                    text-transform: capitalize;
                 }
-                .status-badge.present {
-                    background: rgba(45, 106, 79, 0.1);
-                    color: var(--success);
-                    border-color: rgba(45, 106, 79, 0.2);
+                .indicator-dot { width: 6px; height: 6px; border-radius: 50%; }
+                
+                .status-indicator.present { background: var(--success-bg); color: var(--success); }
+                .status-indicator.present .indicator-dot { background: var(--success); }
+                
+                .status-indicator.absent { background: var(--danger-bg); color: var(--danger); }
+                .status-indicator.absent .indicator-dot { background: var(--danger); }
+                
+                .status-indicator.late { background: var(--warning-bg); color: var(--warning); }
+                .status-indicator.late .indicator-dot { background: var(--warning); }
+
+                .text-right { text-align: right; }
+                .row-action-btn {
+                    background: transparent; color: var(--primary);
+                    font-weight: 700; font-size: 0.8rem;
+                    display: inline-flex; align-items: center; gap: 6px;
+                    padding: 6px 12px; border-radius: 8px;
+                    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
                 }
-                .status-badge.absent {
-                    background: rgba(193, 18, 31, 0.1);
-                    color: var(--danger);
-                    border-color: rgba(193, 18, 31, 0.2);
+                .row-action-btn:hover { background: var(--bg-subtle); transform: translateX(4px); }
+
+                .empty-state-card {
+                    padding: 5rem 2rem; display: flex; flex-direction: column;
+                    align-items: center; text-align: center; gap: 1.25rem;
+                    border-radius: var(--radius-xl);
                 }
-                .status-badge.late {
-                    background: rgba(232, 93, 4, 0.1);
-                    color: var(--warning);
-                    border-color: rgba(232, 93, 4, 0.2);
+                .empty-icon-wrap {
+                    width: 80px; height: 80px; background: var(--bg-subtle);
+                    border-radius: 50%; display: flex; align-items: center;
+                    justify-content: center; color: var(--text-muted); opacity: 0.5;
                 }
-                .view-details {
-                    display: flex;
-                    align-items: center;
-                    gap: 4px;
-                    background: transparent;
-                    color: var(--primary);
-                    font-size: 0.85rem;
-                    font-weight: 600;
+                .reset-link {
+                    background: transparent; color: var(--primary);
+                    font-weight: 600; font-size: 0.85rem; text-decoration: underline;
+                    margin-top: 0.5rem;
                 }
-                .empty-state {
-                    padding: 4rem;
-                    text-align: center;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 1rem;
+
+                .loading-container { padding: 5rem; text-align: center; color: var(--text-muted); }
+                .spinner {
+                    width: 32px; height: 32px; border: 3px solid var(--bg-subtle);
+                    border-top-color: var(--primary); border-radius: 50%;
+                    margin: 0 auto 1.25rem; animation: spin 0.8s linear infinite;
                 }
-                @media (max-width: 768px) {
-                    .page-header {
-                        flex-direction: column;
-                        align-items: flex-start;
-                        gap: 1rem;
-                    }
-                    .export-btn {
-                        width: 100%;
-                        justify-content: center;
-                    }
-                    .filter-bar {
-                        flex-direction: column;
-                        align-items: stretch;
-                        gap: 1.5rem;
-                    }
-                    .search-mini {
-                        margin-left: 0;
-                        width: 100%;
-                    }
-                    .table-wrapper {
-                        overflow-x: auto;
-                    }
-                    .records-table {
-                        min-width: 600px;
-                    }
+                @keyframes spin { to { transform: rotate(360deg); } }
+
+                @media (max-width: 900px) {
+                    .filter-toolbar { flex-wrap: wrap; gap: 1rem; }
+                    .tool-spacer, .tool-divider { display: none; }
+                    .tool-search { min-width: 100%; order: 3; }
+                }
+                @media (max-width: 600px) {
+                    .page-header { flex-direction: column; align-items: stretch; gap: 1rem; }
+                    .action-btn { width: 100%; justify-content: center; }
+                    .tool-group { width: 45%; }
+                    .custom-table { min-width: 600px; }
                 }
             `}</style>
         </div>

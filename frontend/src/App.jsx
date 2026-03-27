@@ -49,8 +49,8 @@ const App = () => {
                     flex: 1;
                     display: flex;
                     flex-direction: column;
-                    margin-left: var(--sidebar-width);
-                    transition: margin 0.3s ease;
+                    margin-left: calc(var(--sidebar-width) + 2.5rem);
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                 }
                 .full-content {
                     flex: 1;
@@ -58,7 +58,7 @@ const App = () => {
                     flex-direction: column;
                 }
                 .page-wrapper {
-                    padding: 2rem;
+                    padding: 0.5rem 2rem 2rem 0;
                     flex: 1;
                 }
                 .mobile-overlay {
@@ -72,12 +72,13 @@ const App = () => {
                     backdrop-filter: blur(2px);
                     z-index: 999;
                 }
+                @media (max-width: 1024px) {
+                    .main-content { margin-left: 0; }
+                    .page-wrapper { padding: 1.5rem; }
+                }
                 @media (max-width: 768px) {
-                    .main-content {
-                        margin-left: 0;
-                    }
                     .page-wrapper {
-                        padding: 1.5rem 1rem;
+                        padding: 1.25rem 1rem;
                     }
                     .mobile-overlay {
                         display: block;

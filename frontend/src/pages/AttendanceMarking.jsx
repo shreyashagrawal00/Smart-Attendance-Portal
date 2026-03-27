@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { Calendar, Check, X, Clock, Save, ChevronRight } from 'lucide-react';
+import { Calendar, Check, X, Clock, Save, ChevronRight, UserCheck, Users, AlertCircle } from 'lucide-react';
 
 const AttendanceMarking = () => {
     const [students, setStudents] = useState([]);
@@ -54,126 +54,188 @@ const AttendanceMarking = () => {
         // Check if all filtered students are marked
         const unmarkedCount = filteredStudents.filter(s => !attendance[s._id]).length;
         if (unmarkedCount > 0) {
-            setMessage({ type: 'error', text: `Please mark attendance for all selected students (${unmarkedCount} remaining).` });
+            setMessage({ type: 'error', text: `Please mark attendance for all students (${unmarkedCount} remaining).` });
             return;
         }
 
         setSaving(true);
         try {
-            // Only submit attendance for the currently filtered students
             const attendanceRecords = filteredStudents.map(s => ({
                 studentId: s._id,
                 status: attendance[s._id]
             }));
             await api.post('/attendance', { attendanceRecords, date });
-            setMessage({ type: 'success', text: 'Attendance saved successfully!' });
+            setMessage({ type: 'success', text: 'Attendance records saved successfully!' });
             setTimeout(() => setMessage(null), 3000);
         } catch (err) {
-            setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to save attendance.' });
+            setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to save records.' });
         } finally {
             setSaving(false);
         }
     };
 
+    const getStats = () => {
+        const counts = { Present: 0, Absent: 0, Late: 0, Unmarked: 0 };
+        filteredStudents.forEach(s => {
+            const status = attendance[s._id];
+            if (status) counts[status]++;
+            else counts.Unmarked++;
+        });
+        return counts;
+    };
+
+    const stats = getStats();
+
     return (
-        <div className="attendance-marking">
+        <div className="attendance-marking fade-in">
             <header className="page-header">
-                <div>
+                <div className="header-title">
                     <h1>Mark Attendance</h1>
-                    <p>Select students and mark their status for today.</p>
+                    <p>Daily roll call for academic sessions.</p>
                 </div>
                 <div className="header-actions">
-                    <select 
-                        className="class-selector glass"
-                        value={selectedClass}
-                        onChange={(e) => setSelectedClass(e.target.value)}
-                    >
-                        <option value="All Classes">All Classes</option>
-                        {classes.map(cls => (
-                            <option key={cls._id} value={cls.name}>{cls.name}</option>
-                        ))}
-                    </select>
-                    <button className="mark-all-btn glass" onClick={handleMarkAllPresent} disabled={filteredStudents.length === 0}>
-                        <Check size={18} />
-                        <span>Mark All Present</span>
-                    </button>
-                    <div className="date-picker glass">
-                        <Calendar size={18} />
+                    <div className="selector-wrapper glass">
+                        <select 
+                            className="class-selector"
+                            value={selectedClass}
+                            onChange={(e) => setSelectedClass(e.target.value)}
+                        >
+                            <option value="All Classes">All Classes</option>
+                            {classes.map(cls => (
+                                <option key={cls._id} value={cls.name}>{cls.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="date-input-wrap glass">
+                        <Calendar size={16} />
                         <input 
                             type="date" 
                             value={date}
                             onChange={(e) => setDate(e.target.value)}
                         />
                     </div>
+                    <button className="icon-btn-text primary" onClick={handleMarkAllPresent} disabled={filteredStudents.length === 0}>
+                        <UserCheck size={18} />
+                        <span>Mark All Present</span>
+                    </button>
                 </div>
             </header>
 
             {message && (
-                <div className={`status-msg ${message.type}`}>
-                    {message.type === 'success' ? <Check size={20} /> : <X size={20} />}
-                    {message.text}
+                <div className={`notification-banner ${message.type}`}>
+                    {message.type === 'success' ? <Check size={18} /> : <AlertCircle size={18} />}
+                    <span>{message.text}</span>
+                    <button className="close-notif" onClick={() => setMessage(null)}>×</button>
                 </div>
             )}
 
-            <div className="list-container glass">
-                <div className="list-header">
-                    <span>Student Details</span>
-                    <span>Status</span>
-                </div>
-                <div className="student-list custom-scrollbar">
-                    {loading ? (
-                        <div className="loading">Loading students...</div>
-                    ) : filteredStudents.length === 0 ? (
-                        <div className="empty">No students found for this class.</div>
-                    ) : (
-                        filteredStudents.map(student => (
-                            <div key={student._id} className="student-row">
-                                <div className="st-info">
-                                    <div className="st-avatar">{student.name.charAt(0)}</div>
-                                    <div>
-                                        <div className="st-name">{student.name}</div>
-                                        <div className="st-meta">Roll: {student.rollNo} | Class: {student.class}</div>
-                                    </div>
-                                </div>
-                                <div className="st-status-actions">
-                                    <button 
-                                        className={`status-btn present ${attendance[student._id] === 'Present' ? 'active' : ''}`}
-                                        onClick={() => handleStatusChange(student._id, 'Present')}
-                                    >
-                                        <Check size={16} />
-                                        <span>Present</span>
-                                    </button>
-                                    <button 
-                                        className={`status-btn absent ${attendance[student._id] === 'Absent' ? 'active' : ''}`}
-                                        onClick={() => handleStatusChange(student._id, 'Absent')}
-                                    >
-                                        <X size={16} />
-                                        <span>Absent</span>
-                                    </button>
-                                    <button 
-                                        className={`status-btn late ${attendance[student._id] === 'Late' ? 'active' : ''}`}
-                                        onClick={() => handleStatusChange(student._id, 'Late')}
-                                    >
-                                        <Clock size={16} />
-                                        <span>Late</span>
-                                    </button>
-                                </div>
+            <div className="marking-layout">
+                <div className="marking-main">
+                    <div className="list-card glass">
+                        <div className="list-card-header">
+                            <div className="header-info">
+                                <Users size={18} />
+                                <span>{filteredStudents.length} Students in Roster</span>
                             </div>
-                        ))
-                    )}
-                </div>
-            </div>
+                            <div className="header-stats">
+                                <span className="stat-label">Unmarked: <span className="stat-val">{stats.Unmarked}</span></span>
+                            </div>
+                        </div>
 
-            <div className="submit-section">
-                <p>Ensure all records are correct before submitting.</p>
-                <button 
-                    className="submit-btn" 
-                    onClick={handleSubmit}
-                    disabled={saving || loading || filteredStudents.length === 0}
-                >
-                    {saving ? 'Saving...' : 'Submit Attendance'}
-                    <Save size={20} />
-                </button>
+                        <div className="student-rows-container custom-scrollbar">
+                            {loading ? (
+                                <div className="loading-state slide-up stagger-1">
+                                    <div className="spinner"></div>
+                                    <p>Retrieving roster...</p>
+                                </div>
+                            ) : filteredStudents.length === 0 ? (
+                                <div className="empty-state-simple slide-up stagger-1">
+                                    <Users size={40} />
+                                    <p>No students found for the selected category.</p>
+                                </div>
+                            ) : (
+                                filteredStudents.map((student, index) => (
+                                    <div key={student._id} className={`marking-row slide-up stagger-${(index % 8) + 1}`}>
+                                        <div className="student-profile">
+                                            <div className="student-avatar-box">
+                                                {student.name.charAt(0)}
+                                            </div>
+                                            <div className="student-info-text">
+                                                <div className="student-name">{student.name}</div>
+                                                <div className="student-meta">Roll: {student.rollNo} • {student.class}</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="status-selector-group">
+                                            <button 
+                                                className={`status-chip present ${attendance[student._id] === 'Present' ? 'active' : ''}`}
+                                                onClick={() => handleStatusChange(student._id, 'Present')}
+                                            >
+                                                <Check size={14} />
+                                                <span>Present</span>
+                                            </button>
+                                            <button 
+                                                className={`status-chip absent ${attendance[student._id] === 'Absent' ? 'active' : ''}`}
+                                                onClick={() => handleStatusChange(student._id, 'Absent')}
+                                            >
+                                                <X size={14} />
+                                                <span>Absent</span>
+                                            </button>
+                                            <button 
+                                                className={`status-chip late ${attendance[student._id] === 'Late' ? 'active' : ''}`}
+                                                onClick={() => handleStatusChange(student._id, 'Late')}
+                                            >
+                                                <Clock size={14} />
+                                                <span>Late</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="marking-sidebar slide-up stagger-2">
+                    <div className="summary-card glass scale-in">
+                        <h3>Session Summary</h3>
+                        <div className="stat-blocks-grid">
+                            <div className="stat-block present slide-up stagger-3">
+                                <span className="stat-num">{stats.Present}</span>
+                                <span className="stat-name">Present</span>
+                            </div>
+                            <div className="stat-block absent slide-up stagger-4">
+                                <span className="stat-num">{stats.Absent}</span>
+                                <span className="stat-name">Absent</span>
+                            </div>
+                            <div className="stat-block late slide-up stagger-5">
+                                <span className="stat-num">{stats.Late}</span>
+                                <span className="stat-name">Late</span>
+                            </div>
+                        </div>
+                        
+                        <div className="submission-prompt slide-up stagger-5">
+                            <p>Verify all marked statuses before finalizing the records for this session.</p>
+                            <button 
+                                className="action-btn primary full-width" 
+                                onClick={handleSubmit}
+                                disabled={saving || loading || filteredStudents.length === 0}
+                            >
+                                {saving ? (
+                                    <>
+                                        <div className="spinner-mini"></div>
+                                        <span>Saving...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save size={18} />
+                                        <span>Submit Records</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <style>{`
@@ -182,216 +244,137 @@ const AttendanceMarking = () => {
                     flex-direction: column;
                     gap: 1.5rem;
                 }
-                .page-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                }
                 .header-actions {
                     display: flex;
                     align-items: center;
-                    gap: 15px;
+                    gap: 0.75rem;
                 }
+                .selector-wrapper { padding: 2px 4px; border-radius: var(--radius-md); }
                 .class-selector {
-                    padding: 0.6rem 1rem;
-                    border-radius: 12px;
-                    border: 1.5px solid var(--border);
-                    background: var(--bg-card);
-                    color: var(--text-main);
-                    font-weight: 500;
-                    outline: none;
-                    cursor: pointer;
-                    min-width: 140px;
+                    padding: 0.55rem 0.8rem; border: none; background: transparent;
+                    color: var(--text-main); font-weight: 600; font-size: 0.85rem; outline: none;
                 }
-                .mark-all-btn {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    padding: 0.6rem 1rem;
-                    border-radius: 12px;
-                    font-weight: 700;
-                    color: var(--bg-main);
-                    background: var(--primary);
-                    border: 1.5px solid var(--primary);
-                    transition: all 0.2s;
+                .date-input-wrap {
+                    display: flex; align-items: center; gap: 8px;
+                    padding: 0.55rem 0.8rem; border-radius: var(--radius-md);
+                    color: var(--text-muted);
                 }
-                .mark-all-btn:hover:not(:disabled) {
-                    filter: brightness(1.1);
-                    transform: translateY(-1px);
+                .date-input-wrap input {
+                    border: none; background: transparent; outline: none;
+                    color: var(--text-main); font-family: inherit; font-size: 0.85rem; font-weight: 600;
                 }
-                .date-picker {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    padding: 0.6rem 1rem;
-                    border-radius: 12px;
+                .icon-btn-text {
+                    font-weight: 700 !important;
                 }
-                .date-picker input {
-                    background: transparent;
-                    border: none;
-                    outline: none;
-                    font-weight: 500;
-                    font-family: inherit;
-                    color: var(--text-main);
+
+                .notification-banner {
+                    display: flex; align-items: center; gap: 12px;
+                    padding: 0.875rem 1.25rem; border-radius: var(--radius-md);
+                    font-size: 0.9rem; font-weight: 500; position: relative;
                 }
-                .status-msg {
-                    padding: 1rem;
-                    border-radius: 12px;
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    animation: slideDown 0.3s ease;
+                .notification-banner.success { background: var(--success-bg); color: var(--success); }
+                .notification-banner.error { background: var(--danger-bg); color: var(--danger); }
+                .close-notif { position: absolute; right: 1rem; font-size: 1.2rem; cursor: pointer; opacity: 0.6; }
+
+                .marking-layout {
+                    display: grid; grid-template-columns: 1fr 300px; gap: 1.5rem;
+                    align-items: start;
                 }
-                .status-msg.success { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
-                .status-msg.error { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
-                
-                .list-container {
-                    border-radius: 20px;
-                    overflow: hidden;
-                }
-                .list-header {
-                    background: rgba(109, 139, 116, 0.03);
-                    padding: 1rem 2rem;
-                    display: flex;
-                    justify-content: space-between;
-                    font-weight: 600;
-                    color: var(--secondary);
-                    font-size: 0.9rem;
+                .list-card { border-radius: var(--radius-xl); overflow: hidden; }
+                .list-card-header {
+                    padding: 1.25rem 1.5rem; background: var(--bg-subtle);
+                    display: flex; justify-content: space-between; align-items: center;
                     border-bottom: 1px solid var(--border);
                 }
-                .student-list {
-                    padding: 1rem;
-                    max-height: calc(100vh - 400px);
-                    overflow-y: auto;
+                .header-info { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--text-main); font-size: 0.9rem; }
+                .stat-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+                .stat-val { color: var(--primary); font-weight: 800; }
+
+                .student-rows-container {
+                    padding: 0.75rem; max-height: calc(100vh - 350px); overflow-y: auto;
                 }
-                .student-row {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 1rem 1.5rem;
-                    border-radius: 16px;
-                    margin-bottom: 0.5rem;
-                    transition: all 0.2s;
+                .marking-row {
+                    display: flex; justify-content: space-between; align-items: center;
+                    padding: 0.85rem 1.15rem; border-radius: var(--radius-lg);
+                    margin-bottom: 0.5rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    border: 1px solid transparent;
                 }
-                .student-row:hover {
-                    background: rgba(109, 139, 116, 0.05);
+                .marking-row:hover { 
+                    background: rgba(255, 255, 255, 0.5); 
+                    border-color: var(--border); 
+                    transform: translateX(4px);
+                    box-shadow: var(--shadow-sm);
                 }
-                .st-info {
-                    display: flex;
-                    align-items: center;
-                    gap: 1rem;
+
+                .student-profile { display: flex; align-items: center; gap: 12px; }
+                .student-avatar-box {
+                    width: 38px; height: 38px; background: var(--primary); color: white;
+                    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                    font-weight: 700; font-size: 0.9rem;
                 }
-                .st-avatar {
-                    width: 44px;
-                    height: 44px;
-                    background: var(--primary);
-                    color: white;
-                    border-radius: 12px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: 700;
-                    font-size: 1.2rem;
+                .student-name { font-weight: 700; color: var(--text-main); font-size: 0.95rem; }
+                .student-meta { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+
+                .status-selector-group { display: flex; gap: 6px; }
+                .status-chip {
+                    display: flex; align-items: center; gap: 8px; padding: 0.6rem 1rem;
+                    border-radius: 10px; font-weight: 700; font-size: 0.775rem;
+                    background: var(--bg-card); color: var(--text-sub);
+                    border: 1.5px solid var(--border);
+                    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
                 }
-                .st-name { font-weight: 600; font-size: 1.05rem; }
-                .st-meta { font-size: 0.85rem; color: var(--secondary); }
+                .status-chip:hover { transform: translateY(-1px); border-color: var(--primary); color: var(--primary); }
+                .status-chip.active { color: white !important; }
                 
-                .st-status-actions {
-                    display: flex;
-                    gap: 8px;
+                .status-chip.present.active { background: var(--success); box-shadow: 0 3px 8px var(--success-bg); }
+                .status-chip.absent.active { background: var(--danger); box-shadow: 0 3px 8px var(--danger-bg); }
+                .status-chip.late.active { background: var(--warning); box-shadow: 0 3px 8px var(--warning-bg); }
+
+                .summary-card { padding: 1.5rem; border-radius: var(--radius-xl); display: flex; flex-direction: column; gap: 1.25rem; }
+                .summary-card h3 { font-size: 1.1rem; }
+                .stat-blocks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+                .stat-block {
+                    display: flex; flex-direction: column; align-items: center; padding: 12px 4px;
+                    border-radius: var(--radius-md); background: var(--bg-subtle);
                 }
-                .status-btn {
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                    padding: 8px 14px;
-                    border-radius: 10px;
-                    font-weight: 600;
-                    font-size: 0.85rem;
-                    background: rgba(109, 139, 116, 0.05);
-                    color: var(--secondary);
-                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-                }
-                .status-btn:hover {
-                    transform: translateY(-1px);
-                    filter: brightness(0.95);
-                }
-                .status-btn:active {
-                    transform: translateY(0);
-                    scale: 0.98;
-                }
-                .status-btn.present.active { background: rgba(45, 106, 79, 0.1); color: var(--success); border: 1px solid rgba(45, 106, 79, 0.2); }
-                .status-btn.absent.active { background: rgba(193, 18, 31, 0.1); color: var(--danger); border: 1px solid rgba(193, 18, 31, 0.2); }
-                .status-btn.late.active { background: rgba(232, 93, 4, 0.1); color: var(--warning); border: 1px solid rgba(232, 93, 4, 0.2); }
+                .stat-num { font-size: 1.25rem; font-weight: 800; font-family: 'Outfit', sans-serif; }
+                .stat-name { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
                 
-                .submit-section {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 1.5rem 2rem;
-                    background: var(--bg-card);
-                    border-radius: 20px;
-                    border: 1px solid var(--border);
+                .stat-block.present { color: var(--success); }
+                .stat-block.absent { color: var(--danger); }
+                .stat-block.late { color: var(--warning); }
+
+                .submission-prompt {
+                    padding-top: 1.25rem; border-top: 1px solid var(--border);
+                    display: flex; flex-direction: column; gap: 1.25rem;
                 }
-                .submit-section p { color: var(--secondary); font-size: 0.9rem; }
-                .submit-btn {
-                    background: var(--primary);
-                    color: var(--bg-main);
-                    padding: 0.875rem 1.5rem;
-                    border-radius: 12px;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    font-weight: 700;
-                    transition: all 0.2s;
+                .submission-prompt p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+                .full-width { width: 100%; justify-content: center; }
+
+                .loading-state { padding: 4rem; text-align: center; color: var(--text-muted); }
+                .spinner {
+                    width: 30px; height: 30px; border: 3px solid var(--bg-subtle);
+                    border-top-color: var(--primary); border-radius: 50%;
+                    margin: 0 auto 1rem; animation: spin 1s linear infinite;
                 }
-                .submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow); }
-                .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-                
-                @media (max-width: 1024px) {
-                    .header-actions {
-                        flex-wrap: wrap;
-                    }
+                .spinner-mini {
+                    width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
+                    border-top-color: white; border-radius: 50%;
+                    animation: spin 1s linear infinite;
                 }
-                @media (max-width: 768px) {
-                    .page-header {
-                        flex-direction: column;
-                        align-items: flex-start;
-                        gap: 1rem;
-                    }
-                    .header-actions {
-                        width: 100%;
-                    }
-                    .class-selector, .mark-all-btn, .date-picker {
-                        width: 100%;
-                        justify-content: center;
-                    }
-                    .student-row {
-                        flex-direction: column;
-                        align-items: flex-start;
-                        gap: 1rem;
-                        padding: 1.5rem;
-                    }
-                    .st-status-actions {
-                        width: 100%;
-                        display: grid;
-                        grid-template-columns: repeat(3, 1fr);
-                        gap: 8px;
-                    }
-                    .status-btn {
-                        width: 100%;
-                        justify-content: center;
-                        padding: 10px 4px;
-                    }
-                    .submit-section {
-                        flex-direction: column;
-                        gap: 1rem;
-                        text-align: center;
-                    }
-                    .submit-btn {
-                        width: 100%;
-                        justify-content: center;
-                    }
+                @keyframes spin { to { transform: rotate(360deg); } }
+
+                @media (max-width: 900px) {
+                    .marking-layout { grid-template-columns: 1fr; }
+                    .marking-sidebar { order: -1; }
+                }
+                @media (max-width: 600px) {
+                    .page-header { flex-direction: column; align-items: stretch; gap: 1.25rem; }
+                    .header-actions { flex-direction: column; width: 100%; }
+                    .selector-wrapper, .date-input-wrap, .icon-btn-text { width: 100%; justify-content: center; }
+                    .marking-row { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.25rem 1rem; }
+                    .status-selector-group { width: 100%; }
+                    .status-chip { flex: 1; justify-content: center; }
                 }
             `}</style>
         </div>

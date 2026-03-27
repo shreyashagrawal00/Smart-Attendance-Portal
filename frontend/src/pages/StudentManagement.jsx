@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { Search, Plus, UserPlus, Edit, Trash2, Filter, GraduationCap, ChevronLeft } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, GraduationCap, ChevronLeft, UserPlus, BookOpen } from 'lucide-react';
 
 const StudentManagement = () => {
     const [students, setStudents] = useState([]);
@@ -32,6 +32,15 @@ const StudentManagement = () => {
             console.error(err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchStudents = async () => {
+        try {
+            const { data } = await api.get('/students');
+            setStudents(data);
+        } catch (err) {
+            console.error(err);
         }
     };
 
@@ -95,7 +104,7 @@ const StudentManagement = () => {
             });
         } else {
             setEditingStudent(null);
-            setFormData({ name: '', rollNo: '', universityRollNo: '', class: '' });
+            setFormData({ name: '', rollNo: '', universityRollNo: '', class: selectedClass ? selectedClass.name : '' });
         }
         setIsModalOpen(true);
     };
@@ -113,202 +122,224 @@ const StudentManagement = () => {
 
     return (
         <div className="student-management">
-            <style>{`
-                .classes-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-                    gap: 1.5rem;
-                    margin-top: 1rem;
-                }
-                .class-card {
-                    padding: 2rem;
-                    border-radius: 24px;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 1rem;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    text-align: center;
-                    position: relative;
-                }
-                .class-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); }
-                .class-icon { 
-                    width: 60px; height: 60px; border-radius: 18px; background: rgba(109, 139, 116, 0.05); color: var(--primary);
-                    display: flex; align-items: center; justify-content: center;
-                }
-                .class-info h3 { font-size: 1.25rem; margin-bottom: 4px; }
-                .class-info p { font-size: 0.9rem; color: var(--secondary); }
-                .class-student-count { font-weight: 600; color: var(--primary); font-size: 0.85rem; }
-                
-                .back-btn { display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--secondary); margin-bottom: 1rem; }
-                .class-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-            `}</style>
-
-            {viewMode === 'classes' ? (
-                <>
-                    <header className="page-header">
-                        <div>
-                            <h1>Academic Classes</h1>
-                            <p>Manage school classes and departments.</p>
-                        </div>
-                        <button className="add-btn" onClick={() => setIsClassModalOpen(true)}>
-                            <Plus size={20} />
-                            <span>Add Class</span>
+            <div className="main-layout slide-up">
+                <div className={`class-sidebar glass slide-up stagger-1`}>
+                    <div className="sidebar-header">
+                        <h3>Academic Sections</h3>
+                        <button className="add-btn primary" onClick={() => setIsClassModalOpen(true)}>
+                            <Plus size={18} />
                         </button>
-                    </header>
-                    <div className="classes-grid">
-                        {classes.map(cls => (
-                            <div key={cls._id} className="class-card glass" onClick={() => { setSelectedClass(cls); setViewMode('students'); }}>
-                                <div className="class-icon"><GraduationCap size={32} /></div>
+                    </div>
+                    
+                    <div className="class-list custom-scrollbar">
+                        {classes.map((cls, index) => (
+                            <div 
+                                key={cls._id} 
+                                className={`class-item ${selectedClass?._id === cls._id ? 'active' : ''} slide-up stagger-${(index % 5) + 1}`}
+                                onClick={() => setSelectedClass(cls)}
+                            >
                                 <div className="class-info">
-                                    <h3>{cls.name}</h3>
-                                    <p>{cls.subjectName || 'No subject name'}</p>
+                                    <span className="class-name">{cls.name}</span>
+                                    <span className="class-meta">{cls.studentCount || 0} Students</span>
                                 </div>
-                                <div className="class-student-count">
-                                    {students.filter(s => s.class === cls.name).length} Students
+                                <div className="class-actions">
+                                    <button className="icon-btn-sm" onClick={(e) => { e.stopPropagation(); handleDeleteClass(cls._id); }}>
+                                        <Trash2 size={14} />
+                                    </button>
                                 </div>
-                                <button className="delete-class-mini" onClick={(e) => { e.stopPropagation(); handleDeleteClass(cls._id); }}>
-                                    <Trash2 size={14} />
-                                </button>
                             </div>
                         ))}
+                        {classes.length === 0 && !loading && (
+                            <div className="empty-classes">
+                                <BookOpen size={32} />
+                                <p>No classes defined yet.</p>
+                            </div>
+                        )}
                     </div>
-                </>
-            ) : (
-                <>
-                    <button className="back-btn" onClick={() => { setViewMode('classes'); setSelectedClass(null); }}>
-                        <ChevronLeft size={20} /> <span>Back to Categories</span>
-                    </button>
-                    <header className="class-header-row">
-                        <div>
-                            <h1>Class {selectedClass?.name}</h1>
-                            <p>{students.filter(s => s.class === selectedClass?.name).length} registered students.</p>
+                </div>
+
+                <div className="content-area">
+                    {loading ? (
+                        <div className="loading-state glass slide-up stagger-2">
+                            <GraduationCap size={48} className="empty-icon" />
+                            <h3>Loading classes...</h3>
+                            <p>Please wait while we fetch your academic data.</p>
                         </div>
-                        <button className="add-btn" onClick={() => { setFormData({...formData, class: selectedClass.name}); setIsModalOpen(true); }}>
-                            <Plus size={20} />
-                            <span>Add Student to {selectedClass?.name}</span>
-                        </button>
-                    </header>
-
-                    <div className="tbl-actions glass">
-                        <div className="search-box">
-                            <Search size={18} />
-                            <input 
-                                type="text" 
-                                placeholder="Search by name, roll no..." 
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
+                    ) : !selectedClass ? (
+                        <div className="empty-state-view glass slide-up stagger-2">
+                            <div className="empty-illustration">
+                                <div className="circle-bg">
+                                    <Users size={60} />
+                                </div>
+                                <div className="dots-grid"></div>
+                            </div>
+                            <h3>Select a Class Section</h3>
+                            <p>Choose an academic section from the left sidebar to manage its students, view roster details, and perform administrative actions.</p>
+                            <div className="empty-actions">
+                                <button className="add-btn primary" onClick={() => setIsClassModalOpen(true)}>
+                                    <Plus size={18} />
+                                    <span>Add Class</span>
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="student-list-container slide-up stagger-2">
+                            <header className="page-header">
+                                <div className="header-title">
+                                    <div className="class-badge">Class {selectedClass?.name}</div>
+                                    <h1>Student Roster</h1>
+                                    <p>Managing {filteredStudents.length} students in this class.</p>
+                                </div>
+                                <button className="add-btn primary" onClick={() => openModal()}>
+                                    <UserPlus size={18} />
+                                    <span>Enlist Student</span>
+                                </button>
+                            </header>
 
-                    <div className="table-container glass custom-scrollbar">
-                        <table className="student-table">
-                            <thead>
-                                <tr>
-                                    <th>Roll No</th>
-                                    <th>Name</th>
-                                    <th>Uni. Roll No</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredStudents.map(student => (
-                                    <tr key={student._id}>
-                                        <td><span className="roll-badge">{student.rollNo}</span></td>
-                                        <td className="st-name">{student.name}</td>
-                                        <td className="st-email">{student.universityRollNo}</td>
-                                        <td>
-                                            <div className="actions">
-                                                <button className="edit-btn" onClick={() => openModal(student)}>
-                                                    <Edit size={16} />
-                                                </button>
-                                                <button className="delete-btn" onClick={() => handleDelete(student._id)}>
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </>
-            )}
+                            <div className="list-controls glass scale-in">
+                                <div className="search-box">
+                                    <Search size={18} />
+                                    <input 
+                                        type="text" 
+                                        placeholder={`Search students in ${selectedClass.name}...`}
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                </div>
+                            </div>
 
+                            <div className="table-responsive glass">
+                                <table className="custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Roll Number</th>
+                                            <th>Student Name</th>
+                                            <th>Uni. Roll Number</th>
+                                            <th className="text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredStudents.map(student => (
+                                            <tr key={student._id}>
+                                                <td><span className="roll-number-tag">{student.rollNo}</span></td>
+                                                <td>
+                                                    <div className="student-info-cell">
+                                                        <div className="student-avatar-mini">{student.name.charAt(0)}</div>
+                                                        <span className="student-name-text">{student.name}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="uni-roll-text">{student.universityRollNo}</td>
+                                                <td className="text-right">
+                                                    <div className="action-buttons-group">
+                                                        <button className="icon-btn edit" title="Edit Student" onClick={() => openModal(student)}>
+                                                            <Edit size={16} />
+                                                        </button>
+                                                        <button className="icon-btn delete" title="Delete Student" onClick={() => handleDelete(student._id)}>
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {filteredStudents.length === 0 && (
+                                            <tr>
+                                                <td colSpan="4" className="empty-table-row">
+                                                    {searchTerm ? 'No matches found for your search.' : 'No students registered in this class.'}
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Class Modal */}
             {isClassModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content glass">
-                        <h2>Add New Class</h2>
+                <div className="modal-overlay fade-in">
+                    <div className="modal-card glass scale-in">
+                        <div className="modal-header">
+                            <div>
+                                <h2>Define New Class</h2>
+                                <p>Set up a new grouping for students.</p>
+                            </div>
+                            <button className="close-x" onClick={() => setIsClassModalOpen(false)}>×</button>
+                        </div>
                         <form onSubmit={handleSaveClass}>
-                            <div className="form-group">
-                                <label>Class Name</label>
-                                <input 
-                                    type="text" required placeholder="e.g. 10-A"
-                                    value={classForm.name}
-                                    onChange={(e) => setClassForm({...classForm, name: e.target.value})}
-                                />
+                            <div className="modal-body">
+                                <div className="form-field">
+                                    <label>Section / Class Name</label>
+                                    <input 
+                                        type="text" required placeholder="e.g. BCA-A"
+                                        value={classForm.name}
+                                        onChange={(e) => setClassForm({...classForm, name: e.target.value})}
+                                    />
+                                </div>
+                                <div className="form-field">
+                                    <label>Academic Subject</label>
+                                    <input 
+                                        type="text" required placeholder="e.g. Software Engineering"
+                                        value={classForm.subjectName}
+                                        onChange={(e) => setClassForm({...classForm, subjectName: e.target.value})}
+                                    />
+                                </div>
                             </div>
-                            <div className="form-group">
-                                <label>Subject Name</label>
-                                <input 
-                                    type="text" placeholder="e.g. Science Batch 2024"
-                                    value={classForm.subjectName}
-                                    onChange={(e) => setClassForm({...classForm, subjectName: e.target.value})}
-                                />
-                            </div>
-                            <div className="modal-actions">
-                                <button type="button" className="cancel-btn" onClick={() => setIsClassModalOpen(false)}>Cancel</button>
-                                <button type="submit" className="save-btn">Create Class</button>
+                            <div className="modal-footer">
+                                <button type="button" className="action-btn secondary" onClick={() => setIsClassModalOpen(false)}>Cancel</button>
+                                <button type="submit" className="action-btn primary">Create Class</button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
 
+            {/* Student Modal */}
             {isModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content glass">
-                        <h2>{editingStudent ? 'Edit Student' : 'Add New Student'}</h2>
+                <div className="modal-overlay fade-in">
+                    <div className="modal-card glass scale-in">
+                        <div className="modal-header">
+                            <div>
+                                <h2>{editingStudent ? 'Update Details' : 'Register Student'}</h2>
+                                <p>{editingStudent ? 'Modify the student profile.' : 'Add a new member to this class.'}</p>
+                            </div>
+                            <button className="close-x" onClick={closeModal}>×</button>
+                        </div>
                         <form onSubmit={handleSave}>
-                            <div className="form-group">
-                                <label>Full Name</label>
-                                <input 
-                                    type="text" required 
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                />
-                            </div>
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label>Roll Number</label>
+                            <div className="modal-body">
+                                <div className="form-field">
+                                    <label>Full Legal Name</label>
                                     <input 
-                                        type="text" required 
-                                        value={formData.rollNo}
-                                        onChange={(e) => setFormData({...formData, rollNo: e.target.value})}
+                                        type="text" required placeholder="Enter student's full name"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({...formData, name: e.target.value})}
                                     />
                                 </div>
-                                <div className="form-group">
-                                    <label>Class/Section</label>
-                                    <input 
-                                        type="text" required 
-                                        value={formData.class}
-                                        onChange={(e) => setFormData({...formData, class: e.target.value})}
-                                    />
+                                <div className="form-row-split">
+                                    <div className="form-field">
+                                        <label>Class Roll No.</label>
+                                        <input 
+                                            type="text" required placeholder="e.g. 01"
+                                            value={formData.rollNo}
+                                            onChange={(e) => setFormData({...formData, rollNo: e.target.value})}
+                                        />
+                                    </div>
+                                    <div className="form-field">
+                                        <label>Uni. Roll Number</label>
+                                        <input 
+                                            type="text" required placeholder="e.g. 2115000..."
+                                            value={formData.universityRollNo}
+                                            onChange={(e) => setFormData({...formData, universityRollNo: e.target.value})}
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                            <div className="form-group">
-                                <label>University Roll Number</label>
-                                <input 
-                                    type="text" required 
-                                    value={formData.universityRollNo}
-                                    onChange={(e) => setFormData({...formData, universityRollNo: e.target.value})}
-                                />
-                            </div>
-                            <div className="modal-actions">
-                                <button type="button" className="cancel-btn" onClick={closeModal}>Cancel</button>
-                                <button type="submit" className="save-btn">Save Student</button>
+                            <div className="modal-footer">
+                                <button type="button" className="action-btn secondary" onClick={closeModal}>Cancel</button>
+                                <button type="submit" className="action-btn primary">
+                                    {editingStudent ? 'Update Profile' : 'Complete Registration'}
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -317,195 +348,322 @@ const StudentManagement = () => {
 
             <style>{`
                 .student-management {
+                    animation: fadeIn 0.4s ease;
+                    display: flex;
+                    height: 100%; /* Ensure it takes full height */
+                }
+                .fade-in { animation: fadeIn 0.4s ease; }
+                .scale-in { animation: scaleIn 0.3s ease; }
+                @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+                /* Staggered animations */
+                .slide-up {
+                    opacity: 0;
+                    transform: translateY(20px);
+                    animation: slideUp 0.5s ease forwards;
+                }
+                @keyframes slideUp {
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .stagger-1 { animation-delay: 0.1s; }
+                .stagger-2 { animation-delay: 0.2s; }
+                .stagger-3 { animation-delay: 0.3s; }
+                .stagger-4 { animation-delay: 0.4s; }
+                .stagger-5 { animation-delay: 0.5s; }
+
+                .main-layout {
+                    display: flex;
+                    width: 100%;
+                    gap: 1.5rem;
+                }
+
+                .class-sidebar {
+                    flex-shrink: 0;
+                    width: 300px;
+                    border-radius: var(--radius-xl);
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                    height: calc(100vh - 100px); /* Adjust based on header/footer */
+                }
+
+                .sidebar-header {
+                    padding: 1.5rem;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    border-bottom: 1px solid var(--border);
+                }
+                .sidebar-header h3 { font-size: 0.9rem; letter-spacing: 0.02em; font-weight: 800; text-transform: uppercase; color: var(--text-muted); opacity: 0.8; }
+                
+                .class-list { padding: 0.75rem; flex: 1; overflow-y: auto; }
+                .class-item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 1rem 1.15rem;
+                    border-radius: var(--radius-md);
+                    margin-bottom: 0.5rem;
+                    cursor: pointer;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                    border: 1.5px solid transparent;
+                }
+                .class-item:hover { background: rgba(75, 107, 80, 0.05); transform: translateX(4px); }
+                .class-item.active {
+                    background: var(--primary);
+                    color: white;
+                    box-shadow: 0 8px 16px rgba(75, 107, 80, 0.2);
+                    transform: translateX(6px);
+                }
+                .class-name { display: block; font-weight: 700; font-size: 1rem; }
+                .class-meta { display: block; font-size: 0.75rem; font-weight: 600; opacity: 0.8; }
+                .class-actions { display: flex; gap: 8px; }
+                .icon-btn-sm {
+                    width: 28px; height: 28px; border-radius: 6px;
+                    display: flex; align-items: center; justify-content: center;
+                    background: rgba(255,255,255,0.2); /* For active state */
+                    color: white; /* For active state */
+                    transition: all 0.2s;
+                }
+                .class-item:not(.active) .icon-btn-sm {
+                    background: var(--danger-bg);
+                    color: var(--danger);
+                }
+                .class-item:not(.active) .icon-btn-sm:hover {
+                    background: var(--danger);
+                    color: white;
+                }
+                .class-item.active .icon-btn-sm:hover {
+                    background: rgba(255,255,255,0.3);
+                }
+
+                .empty-classes {
+                    padding: 2rem 1rem;
+                    text-align: center;
+                    color: var(--text-muted);
+                    opacity: 0.7;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 1rem;
+                }
+
+                .content-area {
+                    flex-grow: 1;
                     display: flex;
                     flex-direction: column;
                     gap: 1.5rem;
                 }
+
+                .empty-state-view {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 4rem 2rem;
+                    text-align: center;
+                    border-radius: var(--radius-xl);
+                }
+                .empty-illustration {
+                    position: relative;
+                    margin-bottom: 2rem;
+                }
+                .circle-bg {
+                    width: 120px; height: 120px; background: var(--bg-subtle);
+                    border-radius: 50%; display: flex; align-items: center;
+                    justify-content: center; color: var(--text-muted); opacity: 0.4;
+                }
+                .empty-state-view h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.75rem; color: var(--text-main); }
+                .empty-state-view p { max-width: 400px; margin-bottom: 2rem; line-height: 1.6; }
+                .empty-actions { display: flex; gap: 1rem; }
+
+                .loading-state {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 4rem 2rem;
+                    text-align: center;
+                    border-radius: var(--radius-xl);
+                    color: var(--text-muted);
+                }
+                .loading-state h3 { margin-top: 1rem; }
+
+                .student-list-container {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.5rem;
+                }
+
                 .page-header {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
+                    margin-bottom: 0; /* Adjusted for new layout */
                 }
-                .add-btn {
+                .header-title h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+                .header-title p { font-size: 0.9rem; color: var(--text-muted); }
+
+                .class-badge {
+                    display: inline-block;
+                    padding: 4px 10px;
                     background: var(--primary);
                     color: white;
-                    padding: 0.75rem 1.25rem;
-                    border-radius: 12px;
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    font-weight: 600;
-                    transition: all 0.2s;
-                }
-                .add-btn:hover {
-                    opacity: 0.9;
-                    transform: translateY(-2px);
-                }
-                .tbl-actions {
-                    padding: 1rem;
-                    border-radius: 16px;
-                    display: flex;
-                    gap: 1rem;
-                    align-items: center;
-                }
-                .search-box {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    background: rgba(109, 139, 116, 0.05);
-                    padding: 0.6rem 1rem;
-                    border-radius: 10px;
-                }
-                .search-box input {
-                    background: transparent;
-                    border: none;
-                    outline: none;
-                    width: 100%;
-                }
-                .filter-btn {
-                    padding: 0.6rem 1rem;
-                    border-radius: 10px;
-                    background: rgba(109, 139, 116, 0.05);
-                    color: var(--secondary);
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    font-weight: 500;
-                }
-                .table-container {
-                    border-radius: 20px;
-                    overflow: hidden;
-                    overflow-x: auto;
-                }
-                .student-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    text-align: left;
-                }
-                .student-table th {
-                    background: rgba(109, 139, 116, 0.02);
-                    padding: 1rem 1.5rem;
-                    font-weight: 600;
-                    color: var(--secondary);
-                    font-size: 0.85rem;
-                    text-transform: uppercase;
-                    letter-spacing: 0.05em;
-                }
-                .student-table td {
-                    padding: 1.25rem 1.5rem;
-                    border-bottom: 1px solid var(--border);
-                }
-                .delete-class-mini {
-                    position: absolute;
-                    top: 15px;
-                    right: 15px;
-                    width: 30px;
-                    height: 30px;
-                    border-radius: 8px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: var(--danger);
-                    background: rgba(239, 68, 68, 0.1);
-                    opacity: 0;
-                    transition: all 0.2s;
-                }
-                .class-card:hover .delete-class-mini { opacity: 1; }
-                .delete-class-mini:hover { background: var(--danger); color: white; }
-                
-                .roll-badge {
-                    background: rgba(109, 139, 116, 0.05);
-                    color: var(--primary);
-                    padding: 4px 10px;
+                    font-size: 0.7rem;
+                    font-weight: 700;
                     border-radius: 6px;
-                    font-weight: 600;
-                    font-size: 0.85rem;
+                    text-transform: uppercase;
+                    margin-bottom: 0.5rem;
                 }
-                .st-name {
-                    font-weight: 600;
+
+                .classes-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                    gap: 1.5rem;
+                    margin-top: 2rem;
                 }
-                .st-email {
-                    color: var(--secondary);
-                    font-size: 0.9rem;
-                }
-                .actions {
+
+                .class-card {
+                    padding: 1.75rem;
+                    border-radius: var(--radius-xl);
                     display: flex;
-                    gap: 8px;
+                    flex-direction: column;
+                    gap: 1.25rem;
+                    cursor: pointer;
+                    position: relative;
+                    transition: all 0.3s ease;
+                    overflow: hidden;
                 }
-                .actions button {
-                    width: 34px;
-                    height: 34px;
-                    border-radius: 8px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
+                .class-card:hover {
+                    transform: translateY(-5px);
+                    border-color: var(--primary);
+                    box-shadow: var(--shadow-lg);
+                }
+
+                .class-card-icon {
+                    width: 50px; height: 50px;
+                    background: var(--bg-subtle);
+                    color: var(--primary);
+                    border-radius: var(--radius-md);
+                    display: flex; align-items: center; justify-content: center;
+                }
+                .class-card-body h3 { font-size: 1.25rem; margin-bottom: 4px; }
+                .class-card-body p { font-size: 0.85rem; color: var(--text-muted); }
+
+                .student-count-badge {
+                    display: flex; align-items: center; gap: 6px;
+                    margin-top: 1rem; color: var(--primary);
+                    font-weight: 700; font-size: 0.8rem;
+                }
+
+                .delete-class-btn {
+                    position: absolute; top: 1.25rem; right: 1.25rem;
+                    width: 32px; height: 32px; border-radius: 8px;
+                    background: var(--danger-bg); color: var(--danger);
+                    display: flex; align-items: center; justify-content: center;
+                    opacity: 0; transition: all 0.2s;
+                }
+                .class-card:hover .delete-class-btn { opacity: 1; }
+                .delete-class-btn:hover { background: var(--danger); color: white; }
+
+                .card-footer-tip {
+                    margin-top: auto; padding-top: 1rem;
+                    border-top: 1px solid var(--border);
+                    display: flex; align-items: center; gap: 4px;
+                    font-size: 0.75rem; font-weight: 600; color: var(--primary);
+                    opacity: 0.8;
+                }
+
+                .empty-state {
+                    grid-column: 1 / -1;
+                    padding: 4rem 2rem;
+                    display: flex; flex-direction: column; align-items: center;
+                    gap: 1.25rem; text-align: center;
+                    border-radius: var(--radius-xl);
+                }
+                .empty-icon { color: var(--text-muted); opacity: 0.3; }
+
+                .table-controls { padding: 1rem 1.5rem; border-radius: var(--radius-lg); margin-bottom: 1.5rem; }
+                .search-wrapper {
+                    display: flex; align-items: center; gap: 12px;
+                    background: var(--bg-subtle); border: 1px solid var(--border);
+                    padding: 0.6rem 1.25rem; border-radius: var(--radius-md);
+                }
+                .search-wrapper input {
+                    background: transparent; border: none; outline: none;
+                    width: 100%; color: var(--text-main); font-size: 0.9rem;
+                }
+
+                .table-responsive { border-radius: var(--radius-xl); overflow: hidden; }
+                .custom-table { width: 100%; border-collapse: collapse; }
+                .custom-table th {
+                    background: var(--bg-subtle); padding: 1.1rem 1.5rem;
+                    text-align: left; font-size: 0.75rem; font-weight: 700;
+                    color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;
+                }
+                .custom-table td {
+                    padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--border);
+                    vertical-align: middle;
+                }
+                .custom-table tr:hover { background: rgba(75, 107, 80, 0.02); }
+
+                .roll-number-tag {
+                    display: inline-block; padding: 4px 10px;
+                    background: var(--success-bg); color: var(--success);
+                    font-weight: 700; font-size: 0.8rem; border-radius: 6px;
+                }
+                .student-info-cell { display: flex; align-items: center; gap: 12px; }
+                .student-avatar-mini {
+                    width: 32px; height: 32px; background: var(--primary);
+                    color: white; border-radius: 50%;
+                    display: flex; align-items: center; justify-content: center;
+                    font-weight: 700; font-size: 0.8rem;
+                }
+                .student-name-text { font-weight: 600; color: var(--text-main); }
+                .uni-roll-text { font-size: 0.85rem; color: var(--text-muted); font-family: monospace; }
+                .text-right { text-align: right; }
+                .action-buttons-group { display: flex; justify-content: flex-end; gap: 6px; }
+                .icon-btn {
+                    width: 34px; height: 34px; border-radius: 8px;
+                    display: flex; align-items: center; justify-content: center;
                     transition: all 0.2s;
                 }
-                .edit-btn { background: rgba(109, 139, 116, 0.1); color: var(--primary); }
-                .edit-btn:hover { background: var(--primary); color: var(--bg-main); }
-                .delete-btn { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-                .delete-btn:hover { background: #ef4444; color: white; }
-                
+                .icon-btn.edit { background: var(--bg-subtle); color: var(--primary); }
+                .icon-btn.edit:hover { background: var(--primary); color: white; }
+                .icon-btn.delete { background: var(--danger-bg); color: var(--danger); }
+                .icon-btn.delete:hover { background: var(--danger); color: white; }
+                .empty-table-row { padding: 3rem; text-align: center; color: var(--text-muted); font-style: italic; }
+
                 .modal-overlay {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: rgba(95, 113, 97, 0.4);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 2000;
-                    backdrop-filter: blur(4px);
+                    position: fixed; inset: 0; background: rgba(26, 43, 28, 0.4);
+                    backdrop-filter: blur(8px); display: flex; align-items: center;
+                    justify-content: center; z-index: 2000; padding: 1.5rem;
                 }
-                .modal-content {
-                    width: 100%;
-                    max-width: 500px;
-                    padding: 2rem;
-                    border-radius: 24px;
+                .modal-card { width: 100%; max-width: 500px; padding: 2.25rem; border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); }
+                .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; }
+                .modal-header h2 { font-size: 1.5rem; }
+                .modal-header p { font-size: 0.85rem; }
+                .close-x { font-size: 1.75rem; color: var(--text-muted); line-height: 1; }
+                .modal-body { display: flex; flex-direction: column; gap: 1.25rem; }
+                .form-field { display: flex; flex-direction: column; gap: 6px; }
+                .form-field label { font-size: 0.85rem; font-weight: 600; color: var(--text-main); }
+                .form-field input {
+                    padding: 0.75rem 1rem; border-radius: var(--radius-md);
+                    border: 1.5px solid var(--border); font-size: 0.9rem;
+                    color: var(--text-main); transition: all 0.2s;
                 }
-                .modal-content h2 { margin-bottom: 1.5rem; }
-                .form-group { margin-bottom: 1.25rem; }
-                .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; }
-                .form-group input { 
-                    width: 100%; 
-                    padding: 0.75rem; 
-                    border-radius: 10px; 
-                    border: 1.5px solid var(--border); 
-                    background: #ffffff;
-                    color: var(--text-main);
-                    outline: none;
-                }
-                .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-                .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 2rem; }
-                .cancel-btn { padding: 0.75rem 1.5rem; border-radius: 10px; background: rgba(109, 139, 116, 0.1); color: var(--primary); font-weight: 600; }
-                .save-btn { padding: 0.75rem 1.5rem; border-radius: 10px; background: var(--primary); color: var(--bg-main); font-weight: 700; transition: all 0.2s; }
+                .form-field input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(75, 107, 80, 0.1); }
+                .form-row-split { display: grid; grid-template-columns: 1fr 1.2fr; gap: 1rem; }
+                .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 2rem; }
+                .action-btn.secondary { background: var(--bg-subtle) !important; border-color: var(--primary) !important; color: var(--text-main) !important; }
+
                 @media (max-width: 768px) {
-                    .page-header {
-                        flex-direction: column;
-                        align-items: flex-start;
-                        gap: 1rem;
-                    }
-                    .add-btn {
-                        width: 100%;
-                        justify-content: center;
-                    }
-                    .form-row {
-                        grid-template-columns: 1fr;
-                    }
-                    .tbl-actions {
-                        flex-direction: column;
-                        align-items: stretch;
-                    }
-                    .search-box {
-                        width: 100%;
-                    }
-                    .class-header-row {
-                        flex-direction: column;
-                        align-items: flex-start;
-                        gap: 1rem;
-                    }
+                    .page-header { flex-direction: column; align-items: stretch; gap: 1.25rem; }
+                    .form-row-split { grid-template-columns: 1fr; }
+                    .custom-table { min-width: 600px; }
                 }
             `}</style>
         </div>

@@ -28,212 +28,216 @@ const Login = () => {
     };
 
     return (
-        <div className="login-container">
-            <div className="login-card glass">
-                <div className="login-header">
-                    <div className="logo-box">
-                        <GraduationCap size={40} />
+        <div className="auth-page">
+            <div className="auth-card glass">
+                <div className="auth-logo">
+                    <div className="logo-icon-box">
+                        <GraduationCap size={28} />
                     </div>
-                    <h1>Welcome Back</h1>
-                    <p>Enter your credentials to access the portal</p>
+                    <div>
+                        <h1>Welcome back</h1>
+                        <p>Sign in to your SmartAttend account</p>
+                    </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="login-form">
-                    {error && <div className="error-msg">{error}</div>}
-                    
-                    <div className="input-group">
-                        <label>Email Address</label>
-                        <div className="input-wrapper">
-                            <Mail className="input-icon" size={20} />
-                            <input 
-                                type="email" 
+                <form onSubmit={handleSubmit} className="auth-form">
+                    {error && (
+                        <div className="auth-error">
+                            <span>⚠</span> {error}
+                        </div>
+                    )}
+
+                    <div className="field-group">
+                        <label htmlFor="email">Email Address</label>
+                        <div className="field-input-wrap">
+                            <Mail className="field-icon" size={17} />
+                            <input
+                                id="email"
+                                type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="name@school.com"
-                                required 
+                                placeholder="admin@school.com"
+                                required
+                                autoComplete="email"
                             />
                         </div>
                     </div>
 
-                    <div className="input-group">
-                        <label>Password</label>
-                        <div className="input-wrapper">
-                            <Lock className="input-icon" size={20} />
-                            <input 
-                                type={showPassword ? "text" : "password"} 
+                    <div className="field-group">
+                        <div className="field-label-row">
+                            <label htmlFor="password">Password</label>
+                            <Link to="/forgot-password" className="forgot-link" title="Feature coming soon">
+                                Forgot password?
+                            </Link>
+                        </div>
+                        <div className="field-input-wrap">
+                            <Lock className="field-icon" size={17} />
+                            <input
+                                id="password"
+                                type={showPassword ? 'text' : 'password'}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••"
-                                required 
+                                required
+                                autoComplete="current-password"
                             />
-                            <button 
-                                type="button" 
-                                className="password-toggle" 
+                            <button
+                                type="button"
+                                className="eye-toggle"
                                 onClick={() => setShowPassword(!showPassword)}
                                 tabIndex="-1"
                             >
-                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                             </button>
                         </div>
-                        <div className="forgot-link-wrapper">
-                            <Link to="/forgot-password" title="Feature coming soon">Forgot Password?</Link>
-                        </div>
                     </div>
 
-                    <button type="submit" className="login-btn" disabled={loading}>
+                    <button type="submit" className="auth-submit-btn" disabled={loading}>
                         {loading ? 'Signing in...' : 'Sign In'}
-                        <ArrowRight size={20} />
+                        {!loading && <ArrowRight size={18} />}
                     </button>
 
-                    <div className="auth-footer">
-                        <p>Don't have an account? <Link to="/register">Create Account</Link></p>
-                    </div>
+                    <p className="auth-switch">
+                        Don't have an account?&nbsp;
+                        <Link to="/register">Create Account</Link>
+                    </p>
                 </form>
             </div>
 
             <style>{`
-                .login-container {
-                    height: 100vh;
+                .auth-page {
+                    min-height: 100vh;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     background: var(--bg-main);
-                    padding: 2rem;
+                    padding: 2rem 1rem;
                 }
-                .login-card {
+                .auth-card {
                     width: 100%;
-                    max-width: 450px;
-                    padding: 3rem;
-                    border-radius: 24px;
-                    color: var(--text-main);
+                    max-width: 420px;
+                    padding: 2.5rem;
+                    border-radius: var(--radius-xl);
                 }
-                .login-header {
-                    text-align: center;
-                    margin-bottom: 2.5rem;
+                .auth-logo {
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    margin-bottom: 2rem;
+                    padding-bottom: 1.5rem;
+                    border-bottom: 1px solid var(--border);
                 }
-                .logo-box {
-                    width: 70px;
-                    height: 70px;
+                .logo-icon-box {
+                    width: 50px;
+                    height: 50px;
+                    flex-shrink: 0;
                     background: var(--primary);
                     color: white;
-                    border-radius: 20px;
+                    border-radius: var(--radius-md);
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    margin: 0 auto 1.5rem;
-                    box-shadow: 0 10px 15px -3px rgba(109, 139, 116, 0.2);
+                    box-shadow: 0 6px 16px rgba(75, 107, 80, 0.25);
                 }
-                .login-header h1 {
-                    font-size: 2rem;
-                    margin-bottom: 0.5rem;
-                }
-                .login-header p {
-                    color: var(--secondary);
-                }
-                .login-form {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 1.5rem;
-                }
-                .input-group label {
-                    display: block;
-                    font-size: 0.9rem;
-                    font-weight: 500;
-                    margin-bottom: 0.5rem;
+                .auth-logo h1 {
+                    font-size: 1.375rem;
+                    margin-bottom: 2px;
                     color: var(--text-main);
                 }
-                .input-wrapper {
+                .auth-logo p {
+                    font-size: 0.82rem;
+                    color: var(--text-muted);
+                }
+                .auth-form {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.25rem;
+                }
+                .auth-error {
+                    background: var(--danger-bg);
+                    color: var(--danger);
+                    padding: 0.75rem 1rem;
+                    border-radius: var(--radius-sm);
+                    font-size: 0.875rem;
+                    border: 1px solid rgba(185, 28, 28, 0.15);
+                    display: flex;
+                    gap: 8px;
+                    align-items: flex-start;
+                }
+                .field-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.4rem;
+                }
+                .field-group label {
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    color: var(--text-main);
+                }
+                .field-label-row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                .forgot-link {
+                    font-size: 0.8rem;
+                    color: var(--primary);
+                    font-weight: 500;
+                }
+                .forgot-link:hover { text-decoration: underline; }
+                .field-input-wrap {
                     position: relative;
                     display: flex;
                     align-items: center;
                 }
-                .input-icon {
+                .field-icon {
                     position: absolute;
-                    left: 1rem;
-                    color: var(--secondary);
+                    left: 0.9rem;
+                    color: var(--text-muted);
+                    pointer-events: none;
                 }
-                .input-wrapper input {
+                .field-input-wrap input {
                     width: 100%;
-                    padding: 0.875rem 1rem 0.875rem 3rem;
+                    padding: 0.8rem 2.8rem 0.8rem 2.6rem;
                     border: 1.5px solid var(--border);
-                    border-radius: 12px;
-                    font-size: 1rem;
-                    transition: all 0.2s;
-                    background: #ffffff;
+                    border-radius: var(--radius-md);
+                    font-size: 0.9rem;
+                    background: white;
                     color: var(--text-main);
+                    font-family: inherit;
+                    transition: all 0.2s;
                 }
-                .input-wrapper input:focus {
+                .field-input-wrap input::placeholder { color: var(--text-muted); opacity: 0.7; }
+                .field-input-wrap input:focus {
+                    outline: none;
                     border-color: var(--primary);
-                    box-shadow: 0 0 0 4px rgba(109, 139, 116, 0.1);
+                    box-shadow: 0 0 0 3px rgba(75, 107, 80, 0.1);
                 }
-                .password-toggle {
+                .eye-toggle {
                     position: absolute;
-                    right: 1rem;
+                    right: 0.9rem;
                     background: transparent;
-                    color: var(--secondary);
+                    color: var(--text-muted);
                     padding: 4px;
                     display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: color 0.2s;
+                    border-radius: 4px;
                 }
-                .password-toggle:hover {
-                    color: var(--primary);
+                .eye-toggle:hover { color: var(--primary); }
+                .auth-submit-btn {
+                    margin-top: 0.25rem;
+                    width: 100%;
                 }
-                .forgot-link-wrapper {
-                    text-align: right;
-                    margin-top: 0.5rem;
-                }
-                .forgot-link-wrapper a {
-                    font-size: 0.85rem;
-                    color: var(--secondary);
-                    font-weight: 500;
-                    transition: color 0.2s;
-                }
-                .forgot-link-wrapper a:hover {
-                    color: var(--primary);
-                }
-                .login-btn {
-                    background: var(--primary);
-                    color: white;
-                    padding: 1rem;
-                    border-radius: 12px;
-                    font-weight: 600;
-                    font-size: 1rem;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 10px;
-                    margin-top: 1rem;
-                    transition: all 0.2s;
-                }
-                .login-btn:hover:not(:disabled) {
-                    background: var(--primary-hover);
-                    transform: translateY(-1px);
-                    box-shadow: 0 10px 15px -3px rgba(109, 139, 116, 0.2);
-                }
-                .login-btn:disabled {
-                    opacity: 0.7;
-                    cursor: not-allowed;
-                }
-                .error-msg {
-                    background: rgba(239, 68, 68, 0.1);
-                    color: var(--danger);
-                    padding: 0.75rem 1rem;
-                    border-radius: 8px;
-                    font-size: 0.9rem;
-                    border: 1px solid rgba(239, 68, 68, 0.2);
-                }
-                .auth-footer {
+                .auth-submit-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+                .auth-switch {
                     text-align: center;
-                    margin-top: 0.5rem;
-                    font-size: 0.95rem;
-                    color: var(--secondary);
+                    font-size: 0.875rem;
+                    color: var(--text-muted);
                 }
-                .auth-footer a {
+                .auth-switch a {
                     color: var(--primary);
                     font-weight: 600;
                 }
+                .auth-switch a:hover { text-decoration: underline; }
             `}</style>
         </div>
     );
