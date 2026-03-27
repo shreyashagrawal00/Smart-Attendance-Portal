@@ -320,9 +320,9 @@ const AttendanceMarking = () => {
                     transform: translateY(0);
                     scale: 0.98;
                 }
-                .status-btn.present.active { background: rgba(109, 139, 116, 0.2); color: var(--primary); border: 1px solid rgba(109, 139, 116, 0.3); }
-                .status-btn.absent.active { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-                .status-btn.late.active { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+                .status-btn.present.active { background: rgba(45, 106, 79, 0.1); color: var(--success); border: 1px solid rgba(45, 106, 79, 0.2); }
+                .status-btn.absent.active { background: rgba(193, 18, 31, 0.1); color: var(--danger); border: 1px solid rgba(193, 18, 31, 0.2); }
+                .status-btn.late.active { background: rgba(232, 93, 4, 0.1); color: var(--warning); border: 1px solid rgba(232, 93, 4, 0.2); }
                 
                 .submit-section {
                     display: flex;

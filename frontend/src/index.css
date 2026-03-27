@@ -8,9 +8,9 @@
   --bg-card: #ffffff;
   --text-main: #2E3A2F;
   --text-muted: #5B7361;
-  --success: #5B7361;
-  --danger: #ef4444;
-  --warning: #f59e0b;
+  --success: #2D6A4F;
+  --danger: #C1121F;
+  --warning: #E85D04;
   --border: rgba(91, 115, 97, 0.2);
   --shadow: 0 4px 6px -1px rgb(75 93 78 / 0.1), 0 2px 4px -2px rgb(75 93 78 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(75 93 78 / 0.1), 0 4px 6px -4px rgb(75 93 78 / 0.1);

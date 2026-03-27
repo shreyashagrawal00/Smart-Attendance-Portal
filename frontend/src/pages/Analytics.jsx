@@ -43,7 +43,7 @@ const Analytics = () => {
     // Mock data for charts if backend doesn't provide enough history yet
     // No mock data needed anymore, using stats from API
 
-    const COLORS = ['#5F7161', '#6D8B74', '#D0C9C0', '#ef4444'];
+    const COLORS = ['#2D6A4F', '#C1121F', '#E85D04', '#6D8B74'];
 
     return (
         <div className="analytics">

@@ -78,27 +78,27 @@ const Dashboard = () => {
                     title="Total Students" 
                     value={stats.totalStudents} 
                     icon={<Users size={24} />} 
-                    color="#6366f1"
+                    color="#4B5D4E"
                     trend={{ value: 12, positive: true }}
                 />
                 <StatsCard 
                     title="Avg Attendance" 
                     value={`${stats.attendancePercentage}%`} 
                     icon={<CheckCircle size={24} />} 
-                    color="#10b981"
+                    color="#2D6A4F"
                     trend={{ value: 5, positive: true }}
                 />
                 <StatsCard 
                     title="Today Present" 
                     value={stats.todayPresent} 
                     icon={<CheckCircle size={24} />} 
-                    color="#8b5cf6"
+                    color="#6D8B74"
                 />
                 <StatsCard 
                     title="Today Absent" 
                     value={stats.todayAbsent} 
                     icon={<XCircle size={24} />} 
-                    color="#ef4444"
+                    color="#C1121F"
                 />
             </div>
 

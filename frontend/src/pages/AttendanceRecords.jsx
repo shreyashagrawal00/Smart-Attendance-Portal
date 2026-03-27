@@ -137,11 +137,7 @@ const AttendanceRecords = () => {
                                         <td>{record.student.rollNo}</td>
                                         <td>{record.student.class}</td>
                                         <td>
-                                            <span className="status-badge" style={{ 
-                                                backgroundColor: `${getStatusColor(record.status)}15`, 
-                                                color: getStatusColor(record.status),
-                                                borderColor: `${getStatusColor(record.status)}30`
-                                            }}>
+                                            <span className={`status-badge ${record.status.toLowerCase()}`}>
                                                 {record.status}
                                             </span>
                                         </td>
@@ -268,11 +264,28 @@ const AttendanceRecords = () => {
                     font-size: 0.85rem;
                 }
                 .status-badge {
-                    padding: 4px 12px;
+                    padding: 6px 14px;
                     border-radius: 20px;
                     font-size: 0.8rem;
-                    font-weight: 600;
+                    font-weight: 700;
                     border: 1px solid transparent;
+                    letter-spacing: 0.02em;
+                    text-transform: capitalize;
+                }
+                .status-badge.present {
+                    background: rgba(45, 106, 79, 0.1);
+                    color: var(--success);
+                    border-color: rgba(45, 106, 79, 0.2);
+                }
+                .status-badge.absent {
+                    background: rgba(193, 18, 31, 0.1);
+                    color: var(--danger);
+                    border-color: rgba(193, 18, 31, 0.2);
+                }
+                .status-badge.late {
+                    background: rgba(232, 93, 4, 0.1);
+                    color: var(--warning);
+                    border-color: rgba(232, 93, 4, 0.2);
                 }
                 .view-details {
                     display: flex;
