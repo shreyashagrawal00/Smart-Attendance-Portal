@@ -41,7 +41,7 @@ const seedData = async () => {
 
         // Create Classes
         await Class.create([
-            { name: '10-A', subjectName: 'Science Section A' },
+            { name: 'SB', subjectName: 'Science Section A' },
             { name: '10-B', subjectName: 'Science Section B' },
             { name: '10-C', subjectName: 'Commerce Section A' },
             { name: '11-A', subjectName: 'Higher Secondary A' },

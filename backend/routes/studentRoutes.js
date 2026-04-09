@@ -58,6 +58,10 @@ router.put('/:id', protect, async (req, res) => {
 router.delete('/:id', protect, async (req, res) => {
     const student = await Student.findById(req.params.id);
     if (student) {
+        // Cascade delete associated attendance records
+        const Attendance = require('../models/Attendance');
+        await Attendance.deleteMany({ student: student._id });
+
         await student.deleteOne();
         res.json({ message: 'Student removed' });
     } else {

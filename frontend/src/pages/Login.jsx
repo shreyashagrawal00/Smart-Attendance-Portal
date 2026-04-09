@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { Mail, Lock, GraduationCap, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
-const Login = () => {
+const Login = ({ onLogin }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -18,8 +18,8 @@ const Login = () => {
         try {
             const { data } = await api.post('/auth/login', { email, password });
             localStorage.setItem('userInfo', JSON.stringify(data));
+            onLogin();
             navigate('/');
-            window.location.reload();
         } catch (err) {
             setError(err.response?.data?.message || 'Invalid email or password');
         } finally {

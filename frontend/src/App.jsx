@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
@@ -13,8 +13,14 @@ import About from './pages/About';
 import './index.css';
 
 const App = () => {
-    const isAuthenticated = !!localStorage.getItem('userInfo');
+    const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('userInfo'));
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    const handleLogin = useCallback(() => setIsAuthenticated(true), []);
+    const handleLogout = useCallback(() => {
+        localStorage.removeItem('userInfo');
+        setIsAuthenticated(false);
+    }, []);
 
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
     const closeSidebar = () => setIsSidebarOpen(false);
@@ -25,11 +31,11 @@ const App = () => {
                 {isAuthenticated && <Sidebar isOpen={isSidebarOpen} closeSidebar={closeSidebar} />}
                 {isAuthenticated && isSidebarOpen && <div className="mobile-overlay" onClick={closeSidebar}></div>}
                 <div className={isAuthenticated ? "main-content" : "full-content"}>
-                    {isAuthenticated && <Navbar toggleSidebar={toggleSidebar} />}
+                    {isAuthenticated && <Navbar toggleSidebar={toggleSidebar} onLogout={handleLogout} />}
                     <div className="page-wrapper">
                         <Routes>
-                            <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />
-                            <Route path="/register" element={!isAuthenticated ? <Register /> : <Navigate to="/" />} />
+                            <Route path="/login" element={!isAuthenticated ? <Login onLogin={handleLogin} /> : <Navigate to="/" />} />
+                            <Route path="/register" element={!isAuthenticated ? <Register onLogin={handleLogin} /> : <Navigate to="/" />} />
                             <Route path="/" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
                             <Route path="/students" element={isAuthenticated ? <StudentManagement /> : <Navigate to="/login" />} />
                             <Route path="/attendance" element={isAuthenticated ? <AttendanceMarking /> : <Navigate to="/login" />} />

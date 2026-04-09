@@ -1,7 +1,7 @@
 import React from 'react';
-import { Search, User, Menu } from 'lucide-react';
+import { Search, User, Menu, LogOut } from 'lucide-react';
 
-const Navbar = ({ toggleSidebar }) => {
+const Navbar = ({ toggleSidebar, onLogout }) => {
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
     return (
@@ -26,6 +26,9 @@ const Navbar = ({ toggleSidebar }) => {
                             <User size={18} />
                         </div>
                     </div>
+                    <button className="logout-btn" onClick={onLogout} title="Logout" id="navbar-logout-btn">
+                        <LogOut size={18} />
+                    </button>
                 </div>
 
             <style>{`
@@ -134,6 +137,22 @@ const Navbar = ({ toggleSidebar }) => {
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                }
+                .logout-btn {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 36px;
+                    height: 36px;
+                    background: transparent;
+                    color: var(--text-muted);
+                    border-radius: var(--radius-sm);
+                    transition: all 0.2s;
+                    flex-shrink: 0;
+                }
+                .logout-btn:hover {
+                    background: var(--danger-bg);
+                    color: var(--danger);
                 }
                 @media (max-width: 1024px) {
                     .navbar { margin-left: 1.5rem; width: auto; }

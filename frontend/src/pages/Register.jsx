@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { Mail, Lock, User, GraduationCap, ArrowRight, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react';
 
-const Register = () => {
+const Register = ({ onLogin }) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -30,8 +30,8 @@ const Register = () => {
         try {
             const { data } = await api.post('/auth/register', { name, email, password, isAdmin: true });
             localStorage.setItem('userInfo', JSON.stringify(data));
+            onLogin();
             navigate('/');
-            window.location.reload();
         } catch (err) {
             setError(err.response?.data?.message || 'Error creating account');
         } finally {

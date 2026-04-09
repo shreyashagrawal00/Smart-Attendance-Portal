@@ -12,7 +12,8 @@ router.post('/', protect, async (req, res) => {
         return res.status(400).json({ message: 'No attendance records provided' });
     }
 
-    const attendanceDate = date ? new Date(date).setHours(0,0,0,0) : new Date().setHours(0,0,0,0);
+    const attendanceDate = new Date(date ? new Date(date) : new Date());
+    attendanceDate.setHours(0, 0, 0, 0);
 
     try {
         const promises = attendanceRecords.map(async (record) => {
@@ -37,11 +38,17 @@ router.get('/', protect, async (req, res) => {
     let query = {};
 
     if (date) {
-        const attendanceDate = new Date(date).setHours(0,0,0,0);
-        query.date = attendanceDate;
+        const attendanceDate = new Date(date);
+        attendanceDate.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+        query.date = { $gte: attendanceDate, $lte: endOfDay };
     }
 
     let attendance = await Attendance.find(query).populate('student');
+
+    // Filter out orphaned records where the student was deleted
+    attendance = attendance.filter(a => a.student !== null);
 
     if (studentClass) {
         attendance = attendance.filter(a => a.student.class === studentClass);
