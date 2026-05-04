@@ -45,13 +45,16 @@ const AttendanceRecords = () => {
         const headers = ['Student Name', 'Roll No', 'Class', 'Status', 'Date'];
         const csvRows = [
             headers.join(','),
-            ...records.map(r => [
-                `"${r.student.name}"`,
-                r.student.rollNo,
-                r.student.class,
-                r.status,
-                date
-            ].join(','))
+            ...records.map(r => {
+                const rawDate = r.date ? new Date(r.date).toISOString().split('T')[0] : date;
+                return [
+                    `"${r.student.name}"`,
+                    `"${r.student.rollNo}"`,
+                    `"${r.student.class}"`,
+                    `"${r.status}"`,
+                    `"${rawDate} "` // Added a trailing space inside quotes to force text mode
+                ].join(',');
+            })
         ];
         
         const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
