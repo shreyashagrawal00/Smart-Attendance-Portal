@@ -23,6 +23,12 @@ router.post('/', protect, async (req, res) => {
             return;
         }
 
+        const uniRollExists = await Student.findOne({ universityRollNo });
+        if (uniRollExists) {
+            res.status(400).json({ message: `University Roll No ${universityRollNo} is already assigned to ${uniRollExists.name}` });
+            return;
+        }
+
         const student = await Student.create({ 
             name, 
             email, 
