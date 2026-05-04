@@ -82,6 +82,7 @@ router.post('/send-otp', async (req, res) => {
         await user.save();
 
         const message = `Your login OTP is: ${otp}. It is valid for 10 minutes.`;
+        console.log(`Generated OTP for ${user.email}: ${otp}`);
 
         await sendEmail({
             email: user.email,

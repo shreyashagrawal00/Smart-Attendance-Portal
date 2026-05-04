@@ -13,6 +13,7 @@ const Login = ({ onLogin }) => {
     const [loading, setLoading] = useState(false);
     const [useOtp, setUseOtp] = useState(false);
     const [otpSent, setOtpSent] = useState(false);
+    const [resendTimer, setResendTimer] = useState(0);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -23,9 +24,7 @@ const Login = ({ onLogin }) => {
         try {
             if (useOtp) {
                 if (!otpSent) {
-                    await api.post('/auth/send-otp', { email });
-                    setOtpSent(true);
-                    setSuccess('OTP sent to your email');
+                    await handleFirstSend();
                 } else {
                     const { data } = await api.post('/auth/verify-otp', { email, otp });
                     localStorage.setItem('userInfo', JSON.stringify(data));
@@ -52,6 +51,44 @@ const Login = ({ onLogin }) => {
         setSuccess('');
         setOtp('');
         setPassword('');
+        setResendTimer(0);
+    };
+
+    const handleResendOtp = async () => {
+        if (resendTimer > 0) return;
+        setLoading(true);
+        setError('');
+        setSuccess('');
+        try {
+            await api.post('/auth/send-otp', { email });
+            setSuccess('OTP resent successfully');
+            startResendTimer();
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to resend OTP');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const startResendTimer = () => {
+        setResendTimer(30);
+        const timer = setInterval(() => {
+            setResendTimer((prev) => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+    };
+
+    // Call startResendTimer when OTP is first sent
+    const handleFirstSend = async () => {
+        await api.post('/auth/send-otp', { email });
+        setOtpSent(true);
+        setSuccess('OTP sent to your email');
+        startResendTimer();
     };
 
     return (
@@ -135,6 +172,16 @@ const Login = ({ onLogin }) => {
                                         required
                                         maxLength="6"
                                     />
+                                </div>
+                                <div className="resend-container">
+                                    <button 
+                                        type="button" 
+                                        className="resend-link" 
+                                        onClick={handleResendOtp}
+                                        disabled={resendTimer > 0 || loading}
+                                    >
+                                        {resendTimer > 0 ? `Resend OTP in ${resendTimer}s` : 'Resend OTP'}
+                                    </button>
                                 </div>
                             </div>
                         )
@@ -291,6 +338,28 @@ const Login = ({ onLogin }) => {
                     width: 100%;
                 }
                 .auth-submit-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+                .resend-container {
+                    display: flex;
+                    justify-content: flex-end;
+                    margin-top: 0.25rem;
+                }
+                .resend-link {
+                    background: none;
+                    border: none;
+                    color: var(--primary);
+                    font-size: 0.8rem;
+                    font-weight: 500;
+                    cursor: pointer;
+                    padding: 0;
+                }
+                .resend-link:disabled {
+                    color: var(--text-muted);
+                    cursor: not-allowed;
+                    opacity: 0.7;
+                }
+                .resend-link:not(:disabled):hover {
+                    text-decoration: underline;
+                }
                 .mode-toggle-btn {
                     background: transparent;
                     border: 1.5px solid var(--primary);
