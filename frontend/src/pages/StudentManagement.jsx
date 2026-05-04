@@ -12,7 +12,7 @@ const StudentManagement = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isClassModalOpen, setIsClassModalOpen] = useState(false);
     const [editingStudent, setEditingStudent] = useState(null);
-    const [formData, setFormData] = useState({ name: '', rollNo: '', universityRollNo: '', class: '' });
+    const [formData, setFormData] = useState({ name: '', email: '', rollNo: '', universityRollNo: '', class: '' });
     const [classForm, setClassForm] = useState({ name: '', subjectName: '' });
 
     useEffect(() => {
@@ -98,13 +98,14 @@ const StudentManagement = () => {
             setEditingStudent(student);
             setFormData({ 
                 name: student.name, 
+                email: student.email || '',
                 rollNo: student.rollNo, 
                 universityRollNo: student.universityRollNo,
                 class: student.class
             });
         } else {
             setEditingStudent(null);
-            setFormData({ name: '', rollNo: '', universityRollNo: '', class: selectedClass ? selectedClass.name : '' });
+            setFormData({ name: '', email: '', rollNo: '', universityRollNo: '', class: selectedClass ? selectedClass.name : '' });
         }
         setIsModalOpen(true);
     };
@@ -324,6 +325,14 @@ const StudentManagement = () => {
                                         type="text" required placeholder="Enter student's full name"
                                         value={formData.name}
                                         onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                    />
+                                </div>
+                                <div className="form-field">
+                                    <label>Email Address</label>
+                                    <input 
+                                        type="email" required placeholder="student@email.com"
+                                        value={formData.email}
+                                        onChange={(e) => setFormData({...formData, email: e.target.value})}
                                     />
                                 </div>
                                 <div className="form-row-split">
