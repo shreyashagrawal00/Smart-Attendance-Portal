@@ -17,9 +17,9 @@ router.post('/', protect, async (req, res) => {
     try {
         const { name, email, rollNo, universityRollNo, class: studentClass } = req.body;
 
-        const studentExists = await Student.findOne({ rollNo });
+        const studentExists = await Student.findOne({ rollNo, class: studentClass });
         if (studentExists) {
-            res.status(400).json({ message: 'Student already exists with this Roll No' });
+            res.status(400).json({ message: `Roll No ${rollNo} already exists in class ${studentClass}` });
             return;
         }
 
