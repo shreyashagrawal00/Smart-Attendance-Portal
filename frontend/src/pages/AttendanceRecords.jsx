@@ -296,7 +296,8 @@ const AttendanceRecords = () => {
                     padding: 0.5rem 1rem;
                     border-radius: var(--radius-md);
                     border: 1px solid var(--border);
-                    min-width: 260px;
+                    flex: 1;
+                    max-width: 320px;
                     transition: all 0.2s;
                 }
                 .tool-search:focus-within {
@@ -400,14 +401,20 @@ const AttendanceRecords = () => {
                 @keyframes spin { to { transform: rotate(360deg); } }
 
                 @media (max-width: 900px) {
-                    .filter-toolbar { flex-wrap: wrap; gap: 1rem; }
+                    .filter-toolbar { 
+                        flex-direction: column; 
+                        align-items: stretch; 
+                        gap: 1rem; 
+                    }
                     .tool-spacer, .tool-divider { display: none; }
-                    .tool-search { min-width: 100%; order: 3; }
+                    .tool-search { max-width: none; }
+                    .header-actions { width: 100%; flex-direction: column; }
+                    .header-actions button { width: 100%; }
                 }
                 @media (max-width: 600px) {
                     .page-header { flex-direction: column; align-items: stretch; gap: 1rem; }
                     .action-btn { width: 100%; justify-content: center; }
-                    .tool-group { width: 45%; }
+                    .tool-group { width: 100%; }
                     .custom-table { min-width: 600px; }
                 }
             `}</style>

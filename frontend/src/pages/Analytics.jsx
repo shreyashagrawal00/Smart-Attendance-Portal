@@ -381,7 +381,22 @@ const Analytics = () => {
                 @media (max-width: 1024px) {
                     .analytics-grid { grid-template-columns: 1fr; }
                     .bottom-chart { grid-column: auto; }
-                    .report-footer-actions { flex-direction: column; }
+                }
+                @media (max-width: 768px) {
+                    .analytics-stats-row { grid-template-columns: 1fr; }
+                    .report-footer-actions { flex-direction: column; gap: 0.75rem; }
+                    .report-btn { width: 100%; justify-content: center; }
+                    .page-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+                    .header-actions { width: 100%; }
+                    .selector-wrapper, .class-selector { width: 100%; }
+                    .modal-card { padding: 1.5rem; }
+                    .modal-header h2 { font-size: 1.25rem; }
+                }
+                @media (max-width: 480px) {
+                    .chart-card { padding: 1rem; }
+                    .stat-card { padding: 1rem; }
+                    .stat-icon { width: 40px; height: 40px; }
+                    .stat-brief .value { font-size: 1.25rem; }
                 }
             `}</style>
         </div>

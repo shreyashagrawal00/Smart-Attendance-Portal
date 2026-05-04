@@ -86,7 +86,7 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
                     display: flex;
                     flex-direction: column;
                     z-index: 1000;
-                    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                     border: 1px solid var(--border);
                 }
                 .sidebar-header {
@@ -206,9 +206,17 @@ const Sidebar = ({ isOpen, closeSidebar }) => {
                 .logout-btn:hover {
                     background: var(--danger-bg);
                 }
-                @media (max-width: 768px) {
-                    .sidebar { transform: translateX(-100%); }
-                    .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-lg); }
+                @media (max-width: 1024px) {
+                    .sidebar {
+                        left: 0;
+                        top: 0;
+                        height: 100vh;
+                        border-radius: 0;
+                        transform: translateX(-100%);
+                    }
+                    .sidebar.open {
+                        transform: translateX(0);
+                    }
                     .mobile-close-btn { display: flex; }
                 }
             `}</style>

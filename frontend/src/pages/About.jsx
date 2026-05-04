@@ -204,8 +204,15 @@ const About = () => {
                 }
 
                 @media (max-width: 900px) {
-                    .about-grid, .campus-stats-grid, .accreditation-grid { grid-template-columns: 1fr; }
+                    .about-grid, .accreditation-grid { grid-template-columns: 1fr; }
+                    .campus-stats-grid { grid-template-columns: repeat(2, 1fr); }
+                    .about-hero { padding: 3rem 1.5rem; }
                     .about-hero h1 { font-size: 2rem; }
+                }
+                @media (max-width: 600px) {
+                    .campus-stats-grid { grid-template-columns: 1fr; }
+                    .hero-badge { font-size: 0.6rem; }
+                    .hero-subtitle { font-size: 0.95rem; }
                 }
             `}</style>
         </div>

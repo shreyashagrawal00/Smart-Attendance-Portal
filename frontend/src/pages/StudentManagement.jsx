@@ -542,7 +542,7 @@ const StudentManagement = () => {
                 .unified-command-bar {
                     display: flex; justify-content: space-between; align-items: center;
                     padding: 0.75rem 0; border-bottom: 2px solid var(--border);
-                    margin-bottom: 2rem; gap: 2rem;
+                    margin-bottom: 2rem; gap: 1.5rem;
                 }
                 
                 .breadcrumb-title { display: flex; align-items: center; gap: 10px; }
@@ -559,7 +559,9 @@ const StudentManagement = () => {
                 .unified-search {
                     display: flex; align-items: center; gap: 12px;
                     background: var(--bg-subtle); border: 1.5px solid var(--border);
-                    padding: 0.65rem 1.25rem; border-radius: 12px; min-width: 320px;
+                    padding: 0.65rem 1.25rem; border-radius: 12px;
+                    width: 100%;
+                    max-width: 400px;
                     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 }
                 .unified-search:focus-within {
@@ -741,10 +743,32 @@ const StudentManagement = () => {
                 .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 2rem; }
                 .action-btn.secondary { background: var(--bg-subtle) !important; border-color: var(--primary) !important; color: var(--text-main) !important; }
 
+                @media (max-width: 900px) {
+                    .unified-command-bar {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 1rem;
+                    }
+                    .header-right {
+                        width: 100%;
+                        flex-direction: column;
+                        align-items: stretch;
+                    }
+                    .unified-search {
+                        max-width: none;
+                    }
+                }
                 @media (max-width: 768px) {
                     .page-header { flex-direction: column; align-items: stretch; gap: 1.25rem; }
                     .form-row-split { grid-template-columns: 1fr; }
                     .custom-table { min-width: 600px; }
+                    .modal-card { padding: 1.5rem; }
+                    .breadcrumb-title h1 { font-size: 1.25rem; }
+                }
+                @media (max-width: 480px) {
+                    .classes-grid { grid-template-columns: 1fr; }
+                    .add-btn span { display: none; }
+                    .add-btn { width: 44px; height: 44px; border-radius: 50%; padding: 0 !important; }
                 }
             `}</style>
         </div>
