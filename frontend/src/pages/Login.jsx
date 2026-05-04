@@ -6,25 +6,52 @@ import { Mail, Lock, GraduationCap, ArrowRight, Eye, EyeOff } from 'lucide-react
 const Login = ({ onLogin }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [otp, setOtp] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
+    const [useOtp, setUseOtp] = useState(false);
+    const [otpSent, setOtpSent] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
+        setSuccess('');
         try {
-            const { data } = await api.post('/auth/login', { email, password });
-            localStorage.setItem('userInfo', JSON.stringify(data));
-            onLogin();
-            navigate('/');
+            if (useOtp) {
+                if (!otpSent) {
+                    await api.post('/auth/send-otp', { email });
+                    setOtpSent(true);
+                    setSuccess('OTP sent to your email');
+                } else {
+                    const { data } = await api.post('/auth/verify-otp', { email, otp });
+                    localStorage.setItem('userInfo', JSON.stringify(data));
+                    onLogin();
+                    navigate('/');
+                }
+            } else {
+                const { data } = await api.post('/auth/login', { email, password });
+                localStorage.setItem('userInfo', JSON.stringify(data));
+                onLogin();
+                navigate('/');
+            }
         } catch (err) {
-            setError(err.response?.data?.message || 'Invalid email or password');
+            setError(err.response?.data?.message || 'Something went wrong');
         } finally {
             setLoading(false);
         }
+    };
+
+    const toggleMode = () => {
+        setUseOtp(!useOtp);
+        setOtpSent(false);
+        setError('');
+        setSuccess('');
+        setOtp('');
+        setPassword('');
     };
 
     return (
@@ -41,9 +68,9 @@ const Login = ({ onLogin }) => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="auth-form">
-                    {error && (
-                        <div className="auth-error">
-                            <span>⚠</span> {error}
+                    {success && (
+                        <div className="auth-success">
+                            <span>✔</span> {success}
                         </div>
                     )}
 
@@ -59,42 +86,67 @@ const Login = ({ onLogin }) => {
                                 placeholder="admin@school.com"
                                 required
                                 autoComplete="email"
+                                disabled={otpSent}
                             />
                         </div>
                     </div>
 
-                    <div className="field-group">
-                        <div className="field-label-row">
-                            <label htmlFor="password">Password</label>
-                            <Link to="/forgot-password" className="forgot-link" title="Feature coming soon">
-                                Forgot password?
-                            </Link>
+                    {!useOtp ? (
+                        <div className="field-group">
+                            <div className="field-label-row">
+                                <label htmlFor="password">Password</label>
+                                <Link to="/forgot-password" className="forgot-link" title="Feature coming soon">
+                                    Forgot password?
+                                </Link>
+                            </div>
+                            <div className="field-input-wrap">
+                                <Lock className="field-icon" size={17} />
+                                <input
+                                    id="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    required
+                                    autoComplete="current-password"
+                                />
+                                <button
+                                    type="button"
+                                    className="eye-toggle"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    tabIndex="-1"
+                                >
+                                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                                </button>
+                            </div>
                         </div>
-                        <div className="field-input-wrap">
-                            <Lock className="field-icon" size={17} />
-                            <input
-                                id="password"
-                                type={showPassword ? 'text' : 'password'}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="••••••••"
-                                required
-                                autoComplete="current-password"
-                            />
-                            <button
-                                type="button"
-                                className="eye-toggle"
-                                onClick={() => setShowPassword(!showPassword)}
-                                tabIndex="-1"
-                            >
-                                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
-                            </button>
-                        </div>
-                    </div>
+                    ) : (
+                        otpSent && (
+                            <div className="field-group">
+                                <label htmlFor="otp">Enter OTP</label>
+                                <div className="field-input-wrap">
+                                    <Lock className="field-icon" size={17} />
+                                    <input
+                                        id="otp"
+                                        type="text"
+                                        value={otp}
+                                        onChange={(e) => setOtp(e.target.value)}
+                                        placeholder="123456"
+                                        required
+                                        maxLength="6"
+                                    />
+                                </div>
+                            </div>
+                        )
+                    )}
 
                     <button type="submit" className="auth-submit-btn" disabled={loading}>
-                        {loading ? 'Signing in...' : 'Sign In'}
+                        {loading ? 'Processing...' : (useOtp ? (otpSent ? 'Verify OTP' : 'Send OTP') : 'Sign In')}
                         {!loading && <ArrowRight size={18} />}
+                    </button>
+
+                    <button type="button" className="mode-toggle-btn" onClick={toggleMode}>
+                        {useOtp ? 'Use Password instead' : 'Login with OTP'}
                     </button>
 
                     <p className="auth-switch">
@@ -164,6 +216,17 @@ const Login = ({ onLogin }) => {
                     gap: 8px;
                     align-items: flex-start;
                 }
+                .auth-success {
+                    background: rgba(16, 185, 129, 0.1);
+                    color: #10b981;
+                    padding: 0.75rem 1rem;
+                    border-radius: var(--radius-sm);
+                    font-size: 0.875rem;
+                    border: 1px solid rgba(16, 185, 129, 0.15);
+                    display: flex;
+                    gap: 8px;
+                    align-items: flex-start;
+                }
                 .field-group {
                     display: flex;
                     flex-direction: column;
@@ -228,6 +291,20 @@ const Login = ({ onLogin }) => {
                     width: 100%;
                 }
                 .auth-submit-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+                .mode-toggle-btn {
+                    background: transparent;
+                    border: 1.5px solid var(--primary);
+                    color: var(--primary);
+                    padding: 0.7rem;
+                    border-radius: var(--radius-md);
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+                .mode-toggle-btn:hover {
+                    background: rgba(75, 107, 80, 0.05);
+                }
                 .auth-switch {
                     text-align: center;
                     font-size: 0.875rem;
