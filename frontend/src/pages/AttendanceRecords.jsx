@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { Calendar, Filter, Download, User, Search, ChevronRight, History, FileText, XCircle } from 'lucide-react';
+import { Calendar, Filter, Download, User, Search, ChevronRight, History, FileText, XCircle, FileDown } from 'lucide-react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const AttendanceRecords = () => {
     const [records, setRecords] = useState([]);
@@ -37,6 +39,51 @@ const AttendanceRecords = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleExportPDF = () => {
+        if (records.length === 0) return alert('No records to export');
+        
+        const doc = new jsPDF();
+        
+        // Add Title
+        doc.setFontSize(20);
+        doc.setTextColor(44, 62, 80);
+        doc.text('Attendance Report', 14, 22);
+        
+        // Add Report Details
+        doc.setFontSize(11);
+        doc.setTextColor(100);
+        doc.text(`Date: ${new Date(date).toLocaleDateString('en-GB')}`, 14, 32);
+        doc.text(`Class: ${selectedClass || 'All Classes'}`, 14, 38);
+        doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 44);
+        
+        // Prepare Table Data
+        const tableColumn = ["Student Name", "Roll No", "Class", "Status"];
+        const tableRows = records.map(r => [
+            r.student.name,
+            r.student.rollNo,
+            r.student.class,
+            r.status
+        ]);
+
+        // Generate Table
+        doc.autoTable({
+            head: [tableColumn],
+            body: tableRows,
+            startY: 50,
+            theme: 'grid',
+            headStyles: { fillColor: [75, 107, 80], textColor: [255, 255, 255] },
+            alternateRowStyles: { fillColor: [245, 245, 245] }
+        });
+
+        // Add Summary Footer
+        const finalY = doc.lastAutoTable.finalY + 10;
+        doc.setFontSize(10);
+        doc.text(`Total Records: ${records.length}`, 14, finalY);
+
+        // Save
+        doc.save(`attendance_${date}_${selectedClass || 'all'}.pdf`);
     };
 
     const handleExportCSV = () => {
@@ -80,10 +127,16 @@ const AttendanceRecords = () => {
                     <h1>Attendance Records</h1>
                     <p>Access historical logs and export detailed reports.</p>
                 </div>
-                <button className="action-btn secondary" onClick={handleExportCSV} disabled={records.length === 0}>
-                    <Download size={18} />
-                    <span>Download CSV</span>
-                </button>
+                <div className="header-actions">
+                    <button className="action-btn secondary" onClick={handleExportCSV} disabled={records.length === 0}>
+                        <Download size={18} />
+                        <span>Download CSV</span>
+                    </button>
+                    <button className="action-btn primary" onClick={handleExportPDF} disabled={records.length === 0}>
+                        <FileDown size={18} />
+                        <span>Download PDF</span>
+                    </button>
+                </div>
             </header>
 
             <div className="controls-stack">
@@ -183,6 +236,10 @@ const AttendanceRecords = () => {
             </div>
 
             <style>{`
+                .header-actions {
+                    display: flex;
+                    gap: 0.75rem;
+                }
                 .attendance-records {
                     display: flex;
                     flex-direction: column;
