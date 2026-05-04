@@ -9,7 +9,17 @@ const { protect } = require('../config/authMiddleware');
 router.get('/', protect, async (req, res) => {
     try {
         const classes = await Class.find({});
-        res.json(classes);
+        
+        // Enhance classes with student counts
+        const classesWithCount = await Promise.all(classes.map(async (cls) => {
+            const studentCount = await Student.countDocuments({ class: cls.name });
+            return {
+                ...cls.toObject(),
+                studentCount
+            };
+        }));
+        
+        res.json(classesWithCount);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
