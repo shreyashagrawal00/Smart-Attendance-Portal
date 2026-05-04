@@ -1,30 +1,29 @@
-const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
 
 const sendEmail = async (options) => {
-    // Initialize Resend inside the function so env vars are loaded
-    const apiKey = process.env.RESEND_API_KEY;
-    console.log(`RESEND_API_KEY loaded: ${apiKey ? 'Yes (' + apiKey.substring(0, 8) + '...)' : 'NO - MISSING!'}`);
-    
-    const resend = new Resend(apiKey);
+    // Create a transporter using Gmail
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS, // This MUST be an App Password, not a regular password
+        },
+    });
 
-    console.log(`Attempting to send email via Resend to ${options.email}...`);
+    const mailOptions = {
+        from: `"e-हाज़री Support" <${process.env.EMAIL_USER}>`,
+        to: options.email,
+        subject: options.subject,
+        text: options.message,
+    };
+
+    console.log(`Attempting to send Gmail to ${options.email}...`);
     try {
-        const { data, error } = await resend.emails.send({
-            from: 'Smart Attendance <onboarding@resend.dev>',
-            to: options.email,
-            subject: options.subject,
-            text: options.message,
-        });
-
-        if (error) {
-            console.error('Resend API Error:', JSON.stringify(error));
-            throw new Error(error.message || JSON.stringify(error));
-        }
-
-        console.log(`Email sent successfully via Resend. ID: ${data.id}`);
-        return data;
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`Email sent successfully via Gmail. ID: ${info.messageId}`);
+        return info;
     } catch (error) {
-        console.error('Email sending failed:', error);
+        console.error('Gmail sending failed:', error);
         throw error;
     }
 };

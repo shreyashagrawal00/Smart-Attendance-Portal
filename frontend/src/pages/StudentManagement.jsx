@@ -126,10 +126,18 @@ const StudentManagement = () => {
             <div className="main-layout slide-up">
                 <div className="content-area">
                     {loading ? (
-                        <div className="loading-state glass slide-up stagger-2">
-                            <GraduationCap size={48} className="empty-icon" />
-                            <h3>Loading classes...</h3>
-                            <p>Please wait while we fetch your academic data.</p>
+                        <div className="loading-wrapper fade-in">
+                            <div className="loading-card glass scale-in">
+                                <div className="spinner-box">
+                                    <GraduationCap size={40} />
+                                    <div className="pulse-ring"></div>
+                                </div>
+                                <h3>Syncing Academic Data</h3>
+                                <p>Please wait while we fetch your classes and student records.</p>
+                                <div className="loading-bar-container">
+                                    <div className="loading-bar-fill"></div>
+                                </div>
+                            </div>
                         </div>
                     ) : !selectedClass ? (
                         <div className="class-selection-view fade-in">
@@ -385,6 +393,74 @@ const StudentManagement = () => {
                 @keyframes slideUp {
                     to { opacity: 1; transform: translateY(0); }
                 }
+
+                .loading-wrapper {
+                    flex: 1;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 400px;
+                }
+                .loading-card {
+                    width: 100%;
+                    max-width: 400px;
+                    padding: 3rem 2rem;
+                    border-radius: var(--radius-xl);
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center;
+                    gap: 1.5rem;
+                    box-shadow: var(--shadow-lg);
+                }
+                .spinner-box {
+                    position: relative;
+                    width: 80px;
+                    height: 80px;
+                    background: var(--bg-subtle);
+                    color: var(--primary);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 0.5rem;
+                }
+                .pulse-ring {
+                    position: absolute;
+                    inset: -4px;
+                    border: 2px solid var(--primary);
+                    border-radius: 50%;
+                    opacity: 0.3;
+                    animation: pulse 1.5s ease-out infinite;
+                }
+                @keyframes pulse {
+                    0% { transform: scale(1); opacity: 0.5; }
+                    100% { transform: scale(1.3); opacity: 0; }
+                }
+                .loading-card h3 { font-size: 1.25rem; color: var(--text-main); font-weight: 800; }
+                .loading-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+                
+                .loading-bar-container {
+                    width: 100%;
+                    height: 4px;
+                    background: var(--bg-subtle);
+                    border-radius: 10px;
+                    overflow: hidden;
+                    margin-top: 0.5rem;
+                }
+                .loading-bar-fill {
+                    height: 100%;
+                    width: 30%;
+                    background: var(--primary);
+                    border-radius: 10px;
+                    animation: loadingBar 2s ease-in-out infinite;
+                }
+                @keyframes loadingBar {
+                    0% { transform: translateX(-100%); width: 30%; }
+                    50% { width: 60%; }
+                    100% { transform: translateX(400%); width: 30%; }
+                }
+
                 .stagger-1 { animation-delay: 0.1s; }
                 .stagger-2 { animation-delay: 0.2s; }
                 .stagger-3 { animation-delay: 0.3s; }
