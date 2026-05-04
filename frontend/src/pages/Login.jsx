@@ -105,6 +105,12 @@ const Login = ({ onLogin }) => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="auth-form">
+                    {error && (
+                        <div className="auth-error">
+                            <span>⚠</span> {error}
+                        </div>
+                    )}
+
                     {success && (
                         <div className="auth-success">
                             <span>✔</span> {success}
