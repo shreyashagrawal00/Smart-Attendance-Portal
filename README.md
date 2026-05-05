@@ -135,5 +135,7 @@ The project is configured for easy deployment on **Vercel**.
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
+## Contribution
+- Improved documentation clarity and formatting.
 
 **Developed with ❤️ by Shreyash Agrawal**
